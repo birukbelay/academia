@@ -1,10 +1,15 @@
-import 'package:academia1/pages/product_admin.dart';
+
 import 'package:flutter/material.dart';
 
 import 'package:academia1/product_manager.dart';
 
 
 class HomePage extends StatelessWidget {
+  final List<Map<String, String>> products;
+  final Function addProduct;
+  final Function deleteProduct;
+  HomePage(this.products, this.addProduct, this.deleteProduct);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -19,10 +24,7 @@ class HomePage extends StatelessWidget {
             ListTile(
               title: Text('All products'),
               onTap:() {
-                Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                        builder: (BuildContext context) => AdminPage()));
+                Navigator.pushReplacementNamed(context, '/admin');
 
               },
             )
@@ -34,7 +36,8 @@ class HomePage extends StatelessWidget {
 
         title: Text('academics'),
       ),
-      body: ProductManager(),
+      body: ProductManager(products, addProduct, deleteProduct),
+
     );
   }
 }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 //
 import 'package:academia1/pages/product_create.dart';
 import 'package:academia1/pages/product_view.dart';
-import 'package:academia1/pages/home.dart';
+//import 'package:academia1/pages/home.dart';
 
 class AdminPage extends StatelessWidget {
   @override
@@ -20,10 +20,7 @@ class AdminPage extends StatelessWidget {
                 ListTile(
                   title: Text('All products'),
                   onTap:() {
-                    Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                            builder: (BuildContext context) => HomePage()));
+                    Navigator.pushReplacementNamed(context, '/');
 
                   },
                 )

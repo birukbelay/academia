@@ -4,57 +4,16 @@ import 'package:flutter/material.dart';
 // my imports
 import 'package:academia1/products.dart';
 
-class ProductManager extends StatefulWidget {
-  final Map startingProduct;
+class ProductManager extends StatelessWidget {
 
-  ProductManager({this.startingProduct}) {
-    print('[product manager Widget] constructor');
-  }
+  final List<Map<String, String>> products;
+  final Function addProduct;
+  final Function deleteProduct;
 
-  @override
-  State<StatefulWidget> createState() {
-    print('[product manager Widget] CreateState()');
+  ProductManager(this.products, this.addProduct, this.deleteProduct);
 
-    return _ProductManagerState();
-  }
-}
 
-class _ProductManagerState extends State<ProductManager> {
-  List<Map> _products = [];
-//  List<String> _products = const[]; //if we dont want to edit or modify the value
-
-  @override
-
-  void initState() {
-    print('[product manager state] initState()');
-
-    if (widget.startingProduct!=null){
-      _products.add(widget.startingProduct);
-    }
-    /// initializing the _products state
-
-    super.initState();
-  }
-
-  @override
-  void didUpdateWidget(ProductManager oldWidget) {
-    print('[ProductManager State] didUpdateWidget');
-    super.didUpdateWidget(oldWidget);
-  }
-
-  void _addProducts(Map product) {
-    setState(() {
-      _products.add(product);
-    });
-  }
-
-  void _deleteProduct(int index){
-      setState(() {
-        _products.removeAt(index);
-      });
-  }
-
-  @override
+    @override
   Widget build(BuildContext context) {
     print('[product manager state] build()');
 
@@ -62,11 +21,11 @@ class _ProductManagerState extends State<ProductManager> {
       children: [
         Container(
           margin: EdgeInsets.all(10.0),
-          child: ProductControl(_addProducts),
+          child: ProductControl(addProduct),
         ),
         Container(
           height: 300.0,
-            child: Products(_products, deleteProducts: _deleteProduct)),
+            child: Products(products, deleteProducts: deleteProduct)),
 
         ///adding products to our products widget
       ],
