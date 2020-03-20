@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 //
-import 'package:academia1/pages/product_create.dart';
-import 'package:academia1/pages/product_view.dart';
+import 'package:academia1/pages/tabs/product_create.dart';
+import 'package:academia1/pages/tabs/product_view.dart';
 //import 'package:academia1/pages/home.dart';
 
 class AdminPage extends StatelessWidget {
