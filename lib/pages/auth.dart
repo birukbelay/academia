@@ -1,4 +1,4 @@
-import 'package:academia1/pages/product_admin.dart';
+//import 'package:academia1/pages/product_admin.dart';
 import 'package:flutter/material.dart';
 
 //
@@ -17,9 +17,10 @@ class AuthPage extends StatelessWidget {
         child: RaisedButton(
           child: Text('login'),
           onPressed: () {
-            Navigator.pushReplacement(context, MaterialPageRoute(
-                builder: (BuildContext context) => AdminPage()),
-            );
+//            Navigator.pushReplacement(context, MaterialPageRoute(
+////                builder: (BuildContext context) => AdminPage()
+//            ),
+//            );
           },
         ),
       ),

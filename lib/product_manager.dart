@@ -1,4 +1,3 @@
-import 'package:academia1/product_control.dart';
 import 'package:flutter/material.dart';
 
 // my imports
@@ -21,10 +20,9 @@ class ProductManager extends StatelessWidget {
       children: [
         Container(
           margin: EdgeInsets.all(10.0),
-          child: ProductControl(addProduct),
+
         ),
-        Container(
-          height: 300.0,
+        Expanded(
             child: Products(products, deleteProducts: deleteProduct)),
 
         ///adding products to our products widget

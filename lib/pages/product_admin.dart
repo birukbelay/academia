@@ -5,6 +5,11 @@ import 'package:academia1/pages/tabs/product_view.dart';
 //import 'package:academia1/pages/home.dart';
 
 class AdminPage extends StatelessWidget {
+
+  Function addProduct;
+  Function deleteProduct;
+  AdminPage(this.addProduct, this.deleteProduct);
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -43,7 +48,7 @@ class AdminPage extends StatelessWidget {
           ),
         ),
         body: TabBarView(
-          children: <Widget>[ProductCreatePage(), ProductViewPage()],
+          children: <Widget>[ProductCreatePage(addProduct, deleteProduct), ProductViewPage()],
         ),
       ),
     );
