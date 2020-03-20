@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
+//import 'package:flutter/rendering.dart';
 // my import
- import 'package:academia1/pages/home.dart';
+ import 'package:academia1/pages/auth.dart';
 
 
 void main(){
@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
           accentColor: Colors.deepOrange,
 //          brightness: Brightness.dark,
         ),
-        home: HomePage(),
+        home: AuthPage(),
     );
   }
 }
