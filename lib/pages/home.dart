@@ -5,7 +5,7 @@ import 'package:academia1/product_manager.dart';
 
 
 class HomePage extends StatelessWidget {
-  final List<Map<String, String>> products;
+  final List<Map<String, dynamic>> products;
   final Function addProduct;
   final Function deleteProduct;
   HomePage(this.products, this.addProduct, this.deleteProduct);

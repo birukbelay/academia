@@ -18,6 +18,7 @@ class _ProductsCreatePage extends State<ProductCreatePage> {
   double price;
   String image;
   String description;
+//  bool _switchs;
   Function addProduct;
 
   @override
@@ -37,6 +38,16 @@ class _ProductsCreatePage extends State<ProductCreatePage> {
               });
             },
           ),
+//          image no Text field
+//        SwitchListTile(
+//          value: _switchs,
+//          onChanged: (bool value){
+//            setState(() {
+//              _switchs=value;
+//            });
+//          },
+//          title: Text('terms'),
+//        ),
           TextField(
             keyboardType: TextInputType.number,
             decoration: InputDecoration(
@@ -69,9 +80,15 @@ class _ProductsCreatePage extends State<ProductCreatePage> {
           RaisedButton(
             child: Text('Save'),
             onPressed: () {
-              widget.addItem({'title': title, 'image': image});
+              final Map<String, dynamic> product = {
+                'title': title,
+                'description': description,
+                'image': image,
+                'price': price,
+              };
+              widget.addItem(product);
               print(image);
-
+              Navigator.pushReplacementNamed(context, '/');
               showModalBottomSheet(
                   context: context,
                   builder: (BuildContext context) {
@@ -79,10 +96,11 @@ class _ProductsCreatePage extends State<ProductCreatePage> {
                       child: Column(
                         children: <Widget>[
                           Image.asset(image),
-                        ListTile(
-                          leading:  Image.asset(image),
-                          title: Text(title),
-                        ),],
+                          ListTile(
+                            leading: Image.asset(image),
+                            title: Text(title),
+                          ),
+                        ],
                       ),
                     );
                   });

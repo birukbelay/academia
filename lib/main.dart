@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 // my import
 //import 'package:academia1/pages/auth.dart';
 import 'package:academia1/pages/home.dart';
-import 'package:academia1/pages/product.dart';
+import 'package:academia1/pages/product_detail.dart';
 
 import 'package:academia1/pages/product_admin.dart';
 
@@ -24,7 +24,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  List<Map<String, String>> _products = [];
+  List<Map<String, dynamic>> _products = [];
 
   @override
 //void initState() {
