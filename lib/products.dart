@@ -11,11 +11,13 @@ class Products extends StatelessWidget {
     print('[product W] constructor');
   }
 
-  Widget _buildProductItem(BuildContext context, int index) {
+  Widget _productItem(BuildContext context, int index) {
     return Card(
       child: Column(
         children: [
           Image.asset(products[index]['image']),
+
+
           Text(products[index]['title']),
           ButtonBar(
             alignment: MainAxisAlignment.center,
@@ -38,12 +40,12 @@ class Products extends StatelessWidget {
     );
   }
 
-  Widget _buildProductList() {
+  Widget _productList() {
     Widget productCard;
 
     if (products.length > 0) {
       productCard = ListView.builder(
-        itemBuilder: _buildProductItem,
+        itemBuilder: _productItem,
         itemCount: products.length,
       );
     } else if (products.length == 0) {
@@ -58,6 +60,6 @@ class Products extends StatelessWidget {
   Widget build(BuildContext context) {
     print('[product W] build() ');
 
-    return _buildProductList();
+    return _productList();
   }
 }

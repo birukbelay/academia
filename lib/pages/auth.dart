@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 
 //
-//import 'package:academia1/pages/home.dart';
+//import 'package:academia1/pages/products_page.dart';
 //import 'package:academia1/pages/product_create.dart';
 
 class AuthPage extends StatelessWidget {

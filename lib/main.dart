@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 //import 'package:flutter/rendering.dart';
 // my import
 //import 'package:academia1/pages/auth.dart';
-import 'package:academia1/pages/home.dart';
+import 'package:academia1/pages/products_page.dart';
 import 'package:academia1/pages/product_detail.dart';
 
 import 'package:academia1/pages/product_admin.dart';
