@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 
-class ProductCreatePage extends StatefulWidget {
-  Function addItem;
-  Function deleteItem;
+class ProductEditPage extends StatefulWidget {
+  Function addProduct;
+  Function updateItem;
+  final Map<String, dynamic> product;
 
-  ProductCreatePage(this.addItem, this.deleteItem);
+  ProductEditPage({this.addProduct, this.updateItem, this.product});
 
   @override
   State<StatefulWidget> createState() {
-    return _ProductsCreatePage();
+    return _ProductsEditPage();
   }
 }
 
-class _ProductsCreatePage extends State<ProductCreatePage> {
+class _ProductsEditPage extends State<ProductEditPage> {
 
   final Map<String, dynamic> _product = {
     'title': '',
@@ -100,13 +101,13 @@ class _ProductsCreatePage extends State<ProductCreatePage> {
     );
   }
 
-  void _addItem() {
+  void _editItem() {
     if (!_formKey.currentState.validate()) {
       return;
     }
     _formKey.currentState.save();
 
-    widget.addItem(_product);
+    widget.addProduct(_product);
 
     Navigator.pushReplacementNamed(context, '/');
 
@@ -140,7 +141,7 @@ class _ProductsCreatePage extends State<ProductCreatePage> {
               _buildDescription(),
               RaisedButton(
                 child: Text('Save'),
-                onPressed: _addItem,
+                onPressed: _editItem,
               ),
             ],
           ),

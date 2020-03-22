@@ -78,7 +78,7 @@ class _AuthPage extends State<AuthPage> {
                 ),
                 passwordWidget(),
 
-                Text(_email + _password),
+//
                 RaisedButton(
                   child: Text('login'),
                   onPressed: () {

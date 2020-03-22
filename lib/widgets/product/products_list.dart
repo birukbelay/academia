@@ -7,19 +7,15 @@ class Products extends StatelessWidget {
   final List<Map> products;
   final Function deleteProducts;
 
-  Products(this.products, {this.deleteProducts}) {
-    ///recieving products in the constructor function
-    print('[product W] constructor');
-  }
-
-
+  Products(this.products, {this.deleteProducts});
 
   Widget _productList() {
     Widget productCard;
 
     if (products.length > 0) {
       productCard = ListView.builder(
-        itemBuilder: (BuildContext context, int index)=>ProductCard(products[index], index, deleteProducts),
+        itemBuilder: (BuildContext context, int index) =>
+            ProductCard(products[index], index, deleteProducts),
         itemCount: products.length,
       );
     } else if (products.length == 0) {
