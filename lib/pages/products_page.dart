@@ -1,7 +1,7 @@
-
 import 'package:flutter/material.dart';
-
-import 'package:academia1/product_manager.dart';
+//
+import 'package:academia1/widgets/ui_element/drawer.dart';
+import 'package:academia1/widgets/product/products_list.dart';
 
 
 class HomePage extends StatelessWidget {
@@ -10,33 +10,27 @@ class HomePage extends StatelessWidget {
   final Function deleteProduct;
   HomePage(this.products, this.addProduct, this.deleteProduct);
 
+
+
+  Widget _drawerWidget(BuildContext context){
+    return Drawer(
+      child: DrawerUi(),
+    );
+  }
+
+  Widget _appBar(){
+    return AppBar(
+      title: Text('academics'),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
 
-      drawer: Drawer(
-        child: Column(
-          children: <Widget>[
-            AppBar(
-              automaticallyImplyLeading: false,
-              title: Text('app bar'),
-            ),
-            ListTile(
-              title: Text('All products'),
-              onTap:() {
-                Navigator.pushReplacementNamed(context, '/admin');
-
-              },
-            )
-          ],
-        ),
-      ),
-      appBar: AppBar(
-
-
-        title: Text('academics'),
-      ),
-      body: ProductManager(products, addProduct, deleteProduct),
+      drawer: _drawerWidget(context),
+      appBar: _appBar(),
+      body: Products(products, deleteProducts: deleteProduct),
 
     );
   }

@@ -1,3 +1,4 @@
+import 'package:academia1/widgets/ui_element/drawer.dart';
 import 'package:flutter/material.dart';
 //
 import 'package:academia1/pages/tabs/product_create.dart';
@@ -10,27 +11,16 @@ class AdminPage extends StatelessWidget {
   Function deleteProduct;
   AdminPage(this.addProduct, this.deleteProduct);
 
+
+
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
       length:2,
       child: Scaffold(
         drawer: Drawer(
-            child: Column(
-              children: <Widget>[
-                AppBar(
-                  automaticallyImplyLeading: false,
-                  title: Text('app bar'),
-                ),
-                ListTile(
-                  title: Text('All products'),
-                  onTap:() {
-                    Navigator.pushReplacementNamed(context, '/');
-
-                  },
-                )
-              ],
-            ),
+            child: DrawerUi(),
         ),
         appBar: AppBar(
           title: Text('admin'),

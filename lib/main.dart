@@ -1,8 +1,9 @@
+
 import 'package:flutter/material.dart';
 
 //import 'package:flutter/rendering.dart';
 // my import
-//import 'package:academia1/pages/auth.dart';
+import 'package:academia1/pages/auth.dart';
 import 'package:academia1/pages/products_page.dart';
 import 'package:academia1/pages/product_detail.dart';
 
@@ -68,6 +69,7 @@ class _MyAppState extends State<MyApp> {
         '/': (BuildContext context) =>
             HomePage(_products, _addProduct, _deleteProduct),
         '/admin': (BuildContext context) => AdminPage(_addProduct, _deleteProduct),
+        '/auth': (BuildContext context) => AuthPage(),
       },
       onGenerateRoute: (RouteSettings settings) {
         final List<String> pathElements = settings.name.split('/');
