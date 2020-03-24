@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 //
 import 'package:academia1/widgets/ui_element/drawer.dart';
-import 'package:academia1/widgets/product/products_list.dart';
+import 'package:academia1/widgets/product/product_card_container.dart';
 
 
 class HomePage extends StatelessWidget {

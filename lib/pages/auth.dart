@@ -3,12 +3,10 @@ import 'package:flutter/material.dart';
 
 //
 //import 'package:academia1/pages/products_page.dart';
-//import 'package:academia1/pages/product_create.dart';
 
 class AuthPage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
-
     return _AuthPage();
   }
 }
@@ -17,6 +15,7 @@ class _AuthPage extends State<AuthPage> {
   String _email;
   String _password;
 
+//   =========================  the Email Widget  ======================
   Widget emailWidget() {
     return TextField(
       decoration: InputDecoration(
@@ -30,7 +29,9 @@ class _AuthPage extends State<AuthPage> {
     );
   }
 
-  Widget passwordWidget() {
+//  ==================  The password Widget  ====================
+
+   Widget passwordWidget() {
     return TextField(
       decoration: InputDecoration(
           labelText: 'Password', filled: true, fillColor: Colors.white12),
@@ -42,7 +43,7 @@ class _AuthPage extends State<AuthPage> {
       },
     );
   }
-
+// =========================  The decoration image for the background  ================
   DecorationImage decorationImageWidget() {
     return DecorationImage(
         fit: BoxFit.cover,
@@ -50,35 +51,33 @@ class _AuthPage extends State<AuthPage> {
             ColorFilter.mode(Colors.black.withOpacity(0.3), BlendMode.dstATop),
         image: AssetImage('assets/images/food/34.jpg'));
   }
-  Widget _appbar(){
+//======================  ApppBar Widget  =====================
+  Widget _appbar() {
     return AppBar(
       title: Text('auth'),
     );
   }
 
+//  =====================  --- MAIN BUILD METHOD --- =================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar:_appbar() ,
-
+      appBar: _appbar(),
       body: Container(
         decoration: BoxDecoration(
 //          decoration image
-            image: decorationImageWidget()
-
-        ),
+            image: decorationImageWidget()),
         child: Center(
           child: SingleChildScrollView(
             child: Column(
               children: <Widget>[
-
                 emailWidget(),
                 SizedBox(
                   width: 19.0,
                 ),
                 passwordWidget(),
 
-//
+                Text('$_email  $_password'),
                 RaisedButton(
                   child: Text('login'),
                   onPressed: () {

@@ -46,6 +46,7 @@ class ProductCard extends StatelessWidget {
           ButtonBar(
             alignment: MainAxisAlignment.center,
             children: <Widget>[
+
               IconButton(
                 icon: Icon(Icons.info),
                 color: Theme.of(context).accentColor,
@@ -58,6 +59,7 @@ class ProductCard extends StatelessWidget {
                   }
                 }),
               ),
+
               IconButton(
                   icon: Icon(Icons.favorite_border),
                   color: Colors.red,

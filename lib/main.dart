@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 //import 'package:flutter/rendering.dart';
@@ -24,10 +23,12 @@ class MyApp extends StatefulWidget {
   }
 }
 
+// ======================== ####  State Widget ###  =====================
+
 class _MyAppState extends State<MyApp> {
   List<Map<String, dynamic>> _products = [];
 
-  @override
+//  @override
 //void initState() {
 //  print('[product manager state] initState()');//
 //  if (widget.startingProduct!=null){
@@ -43,9 +44,17 @@ class _MyAppState extends State<MyApp> {
 //  super.didUpdateWidget(oldWidget);
 //}
 
+// ====================================== Product functions ==============================
   void _addProduct(Map product) {
     setState(() {
       _products.add(product);
+    });
+  }
+
+  void _updateProduct(int index, Map product) {
+    setState(() {
+      _products[index]= product;
+
     });
   }
 
@@ -55,22 +64,30 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+//   ========================  @@@@@  Build method gor the Widget  @@@@   =========================
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
+
+//      ==================  Theme ---------------------
       theme: ThemeData(
         primarySwatch: Colors.blue,
         accentColor: Colors.deepOrange,
 //          brightness: Brightness.dark,
       ),
 //        home: AuthPage(),
+
+//    ============================Routes --------------
       routes: {
         '/': (BuildContext context) =>
             HomePage(_products, _addProduct, _deleteProduct),
-        '/admin': (BuildContext context) => AdminPage(_addProduct, _deleteProduct, _products),
+        '/admin': (BuildContext context) =>
+            AdminPage(_addProduct, _updateProduct, _deleteProduct,  _products),
         '/auth': (BuildContext context) => AuthPage(),
       },
+
+//      ======================  on generate Routes ------------
       onGenerateRoute: (RouteSettings settings) {
         final List<String> pathElements = settings.name.split('/');
         if (pathElements[0] != '') {
@@ -87,9 +104,12 @@ class _MyAppState extends State<MyApp> {
         return null;
       },
 
-      onUnknownRoute: (RouteSettings settings){
+//      ================  =============  On unknown Route
+
+      onUnknownRoute: (RouteSettings settings) {
         return MaterialPageRoute(
-          builder: (BuildContext context)=>HomePage(_products, _addProduct, _deleteProduct),
+          builder: (BuildContext context) =>
+              HomePage(_products, _addProduct, _deleteProduct),
         );
       },
     );
