@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:scoped_model/scoped_model.dart';
+
+//my
+import 'package:academia1/models/product.dart';
+import '../../scoped_models/products.dart';
 
 class ProductEditPage extends StatefulWidget {
   Function addProduct;
   Function updateProduct;
-  final Map<String, dynamic> product;
+  final Product product;
   final int productIndex;
 
   ProductEditPage(
@@ -18,7 +23,7 @@ class ProductEditPage extends StatefulWidget {
 //=========================  state of the widget  ==============================
 
 class _ProductsEditPage extends State<ProductEditPage> {
-  final Map<String, dynamic> _product = {
+  final Map<String, dynamic> _formData = {
     'title': '',
     'description': '',
     'image': 'image',
@@ -37,14 +42,14 @@ class _ProductsEditPage extends State<ProductEditPage> {
       decoration: InputDecoration(
         labelText: 'product name',
       ),
-      initialValue: widget.product == null ? '' : widget.product['title'],
+      initialValue: widget.product == null ? '' : widget.product.title,
       validator: (String value) {
         if (value.isEmpty) {
           return 'title required';
         }
       },
       onSaved: (String value) {
-        _product['title'] = value;
+        _formData['title'] = value;
       },
     );
   }
@@ -64,7 +69,7 @@ class _ProductsEditPage extends State<ProductEditPage> {
         }
       },
       onSaved: (String value) {
-        _product['image'] = 'assets/images/food/' + value + '.jpg';
+        _formData['image'] = 'assets/images/food/' + value + '.jpg';
       },
     );
   }
@@ -77,7 +82,7 @@ class _ProductsEditPage extends State<ProductEditPage> {
       keyboardType: TextInputType.number,
       obscureText: false,
       initialValue:
-          widget.product == null ? '' : widget.product['price'].toString(),
+          widget.product == null ? '' : widget.product.price.toString(),
       validator: (String value) {
         if (value.isEmpty ||
             !RegExp(r'^(?:[1-9]\d*|0)?(?:\.\d+)?$').hasMatch(value)) {
@@ -85,7 +90,7 @@ class _ProductsEditPage extends State<ProductEditPage> {
         }
       },
       onSaved: (String value) {
-        _product['price'] = double.parse(value);
+        _formData['price'] = double.parse(value);
       },
     );
   }
@@ -96,16 +101,42 @@ class _ProductsEditPage extends State<ProductEditPage> {
     return TextFormField(
       maxLines: 2,
       decoration: InputDecoration(labelText: 'description'),
-      initialValue: widget.product == null
-          ? ''
-          : widget.product['description'].toString(),
+      initialValue:
+          widget.product == null ? '' : widget.product.description.toString(),
       validator: (String value) {
         if (value.isEmpty || value.length < 5) {
           return 'desc required';
         }
       },
       onSaved: (String value) {
-        _product['description'] = value;
+        _formData['description'] = value;
+      },
+    );
+  }
+
+  //  ============================  build bottom modal ====================
+  Widget _buildModal() {
+    return Card(
+      child: Column(
+        children: <Widget>[
+          Image.asset(_formData['image']),
+          ListTile(
+            leading: Image.asset(_formData['image']),
+            title: Text(_formData['title']),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _submitMessage() {
+    return ScopedModelDescendant<ProductsModel>(
+      builder: (BuildContext context, Widget widget, ProductsModel model) {
+        return RaisedButton(
+            child: Text('Save'),
+            onPressed: () =>
+                _editItem(model.addProduct, model.updateProduct)
+        );
       },
     );
   }
@@ -117,7 +148,9 @@ class _ProductsEditPage extends State<ProductEditPage> {
     final double targetPadding = (deviceWidth - targetWidth) / 2;
 
     return GestureDetector(
-      onTap: () {  FocusScope.of(context).requestFocus(FocusNode());   },
+      onTap: () {
+        FocusScope.of(context).requestFocus(FocusNode());
+      },
       child: Container(
         margin: EdgeInsets.all(20.0),
         child: Form(
@@ -129,10 +162,7 @@ class _ProductsEditPage extends State<ProductEditPage> {
               _buildImage(),
               _buildPrice(),
               _buildDescription(),
-              RaisedButton(
-                child: Text('Save'),
-                onPressed: _editItem,
-              ),
+              _submitMessage(),
             ],
           ),
         ),
@@ -140,33 +170,24 @@ class _ProductsEditPage extends State<ProductEditPage> {
     );
   }
 
-//  ============================  build bottom modal ====================
-  Widget _buildModal() {
-    return Card(
-      child: Column(
-        children: <Widget>[
-          Image.asset(_product['image']),
-          ListTile(
-            leading: Image.asset(_product['image']),
-            title: Text(_product['title']),
-          ),
-        ],
-      ),
-    );
-  }
-
 //  ======================= Function Edit item =========================
 
-  void _editItem() {
+  void _editItem(Function addProduct, Function updateProduct) {
     if (!_formKey.currentState.validate()) {
       return;
     }
     _formKey.currentState.save();
 
+    var product = new Product(
+        title: _formData['title'],
+        image: _formData['image'],
+        price: _formData['price'],
+        description: _formData['description']);
+
     if (widget.product == null) {
-      widget.addProduct(_product);
+    addProduct(product);
     } else {
-      widget.updateProduct(widget.productIndex, _product);
+    updateProduct(widget.productIndex, product);
     }
 
     Navigator.pushReplacementNamed(context, '/');

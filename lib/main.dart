@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:scoped_model/scoped_model.dart';
 
 //import 'package:flutter/rendering.dart';
 // my import
-import 'package:academia1/pages/auth.dart';
-import 'package:academia1/pages/products_page.dart';
-import 'package:academia1/pages/product_detail.dart';
+import './pages/auth.dart';
+import './pages/products_page.dart';
+import './pages/product_detail.dart';
+import './pages/product_admin.dart';
 
-import 'package:academia1/pages/product_admin.dart';
+import './scoped_models/products.dart';
 
 void main() {
 //  debugPaintSizeEnabled = true;
@@ -26,7 +28,7 @@ class MyApp extends StatefulWidget {
 // ======================== ####  State Widget ###  =====================
 
 class _MyAppState extends State<MyApp> {
-  List<Map<String, dynamic>> _products = [];
+
 
 //  @override
 //void initState() {
@@ -45,29 +47,13 @@ class _MyAppState extends State<MyApp> {
 //}
 
 // ====================================== Product functions ==============================
-  void _addProduct(Map product) {
-    setState(() {
-      _products.add(product);
-    });
-  }
-
-  void _updateProduct(int index, Map product) {
-    setState(() {
-      _products[index]= product;
-
-    });
-  }
-
-  void _deleteProduct(int index) {
-    setState(() {
-      _products.removeAt(index);
-    });
-  }
 
 //   ========================  @@@@@  Build method gor the Widget  @@@@   =========================
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return ScopedModel<ProductsModel>(
+      model:ProductsModel(),
+      child: MaterialApp(
       title: 'Flutter Demo',
 
 //      ==================  Theme ---------------------
@@ -81,9 +67,9 @@ class _MyAppState extends State<MyApp> {
 //    ============================Routes --------------
       routes: {
         '/': (BuildContext context) =>
-            HomePage(_products, _addProduct, _deleteProduct),
+            HomePage(),
         '/admin': (BuildContext context) =>
-            AdminPage(_addProduct, _updateProduct, _deleteProduct,  _products),
+            AdminPage(),
         '/auth': (BuildContext context) => AuthPage(),
       },
 
@@ -97,8 +83,7 @@ class _MyAppState extends State<MyApp> {
           final int index = int.parse(pathElements[2]);
 
           return MaterialPageRoute<bool>(
-            builder: (BuildContext context) => ProductPage(
-                _products[index]['title'], _products[index]['image']),
+            builder: (BuildContext context) => ProductPage(index),
           );
         }
         return null;
@@ -109,9 +94,9 @@ class _MyAppState extends State<MyApp> {
       onUnknownRoute: (RouteSettings settings) {
         return MaterialPageRoute(
           builder: (BuildContext context) =>
-              HomePage(_products, _addProduct, _deleteProduct),
+              HomePage(),
         );
       },
-    );
+    ),);
   }
 }

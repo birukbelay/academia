@@ -1,39 +1,21 @@
-import 'package:academia1/widgets/ui_element/title.dart';
 import 'package:flutter/material.dart';
+import 'package:scoped_model/scoped_model.dart';
+
+//my
+import '../scoped_models/products.dart';
+import '../widgets/ui_element/title.dart';
+import '../models/product.dart';
+
 
 class ProductPage extends StatelessWidget {
-  final String title;
-  final String imageUrl;
+  final int productIndex;
+
   final bool fav=false;
 
-  ProductPage(this.title, this.imageUrl);
+  ProductPage(this.productIndex);
 
-  _showWarningDialog(BuildContext context) {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Are you sure'),
-            content: Text('this action cant be undone'),
-            actions: <Widget>[
-              FlatButton(
-                child: Text('Discard'),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-              ),
-              FlatButton(
-                child: Text('Continue'),
-                onPressed: () {
-                  Navigator.pop(context);
-                  Navigator.pop(context, true);
-                },
-              ),
-            ],
-          );
-        });
-  }
-Widget _appbar(BuildContext context){
+
+Widget _appbar(BuildContext context, String title){
     return AppBar(
       title: Text(title),
       actions: <Widget>[
@@ -46,27 +28,47 @@ Widget _appbar(BuildContext context){
       ],
     );
 }
+
+  Widget _buildAdressPriceRow(price){
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        Text('Union Square, San fransisco',
+          style: TextStyle(fontFamily: 'Oswald', color: Colors.grey),),
+        Container(
+          margin: EdgeInsets.symmetric(horizontal: 5.0),
+          child: Text('|', style: TextStyle(color: Colors.grey),),
+        ),
+        Text('\$' + price.toString(), style: TextStyle(fontFamily: 'Oswald', color: Colors.grey),)
+
+      ],
+    );
+  }
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _appbar(context),
-      body: Center(
-        child: Column(
-          children: <Widget>[
-            Image.asset(imageUrl),
-            Container(
-                padding: EdgeInsets.all(10.0), child: TitleDefault(title)),
-            Container(
-              padding: EdgeInsets.all(10.0),
-              child: RaisedButton(
-                color: Theme.of(context).accentColor,
-                child: Text('Delete'),
-                onPressed: () => _showWarningDialog(context),
+
+    return ScopedModelDescendant<ProductsModel>(builder: (BuildContext context, Widget child, ProductsModel model){
+      final Product product = model.products[productIndex];
+      return Scaffold(
+        appBar: _appbar(context, product.title),
+        body: Center(
+          child: Column(
+            children: <Widget>[
+              Image.asset(product.image),
+              Container(
+                  padding: EdgeInsets.all(10.0), child: TitleDefault(product.title)),
+              _buildAdressPriceRow(product.price),
+              Container(
+                padding: EdgeInsets.all(10.0),
+                child: Text(
+                  product.description,
+                  textAlign: TextAlign.center,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    },);
   }
 }

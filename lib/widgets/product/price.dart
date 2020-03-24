@@ -13,7 +13,8 @@ class Price extends StatelessWidget {
           color: Theme.of(context).accentColor,
           borderRadius: BorderRadius.circular(4.0)
       ),
-      child: Text('\$$price'),
+      child: Text('\$$price',  style: TextStyle(color: Colors.white),),
+
     );
   }
 }
