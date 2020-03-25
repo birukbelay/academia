@@ -53,6 +53,7 @@ class EnsureVisibleWhenFocusedState extends State<EnsureVisibleWhenFocused> {
     await Future.delayed(const Duration(milliseconds: 300));
 
     if (!widget.focusNode.hasFocus)
+
       return;
 
     final RenderObject object = context.findRenderObject();
