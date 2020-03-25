@@ -25,30 +25,9 @@ class MyApp extends StatefulWidget {
   }
 }
 
-// ======================== ####  State Widget ###  =====================
 
 class _MyAppState extends State<MyApp> {
 
-
-//  @override
-//void initState() {
-//  print('[product manager state] initState()');//
-//  if (widget.startingProduct!=null){
-//    _products.add(widget.startingProduct);
-//  }
-//  /// initializing the _products state//
-//  super.initState();
-//}
-
-//@override
-//void didUpdateWidget(ProductManager oldWidget) {
-//  print('[ProductManager State] didUpdateWidget');
-//  super.didUpdateWidget(oldWidget);
-//}
-
-// ====================================== Product functions ==============================
-
-//   ========================  @@@@@  Build method gor the Widget  @@@@   =========================
   @override
   Widget build(BuildContext context) {
     return ScopedModel<ProductsModel>(
@@ -67,7 +46,7 @@ class _MyAppState extends State<MyApp> {
 //    ============================Routes --------------
       routes: {
         '/': (BuildContext context) =>
-            HomePage(),
+            ProductsPage(),
         '/admin': (BuildContext context) =>
             AdminPage(),
         '/auth': (BuildContext context) => AuthPage(),
@@ -94,7 +73,7 @@ class _MyAppState extends State<MyApp> {
       onUnknownRoute: (RouteSettings settings) {
         return MaterialPageRoute(
           builder: (BuildContext context) =>
-              HomePage(),
+              ProductsPage(),
         );
       },
     ),);

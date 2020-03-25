@@ -1,15 +1,14 @@
-import 'package:academia1/models/product.dart';
-import 'package:academia1/pages/tabs/product_edit.dart';
 import 'package:flutter/material.dart';
+import 'package:scoped_model/scoped_model.dart';
+//my
+
+import './product_edit.dart';
+import '../../scoped_models/products.dart';
 
 class ProductViewPage extends StatelessWidget {
-  Function updateProduct;
-  Function deleteProduct;
-  final List<Product> products;
 
-  ProductViewPage(this.products, this.updateProduct, this.deleteProduct);
 
-  _showWarningDialog(BuildContext context, int index) {
+  _showWarningDialog(BuildContext context, int index, model) {
     showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -27,7 +26,9 @@ class ProductViewPage extends StatelessWidget {
                 child: Text('Delete'),
                 onPressed: () {
                   Navigator.pop(context);
-                  deleteProduct(index);
+                  model.selectProduct(index);
+                  model.deleteProduct();
+
 //                  Navigator.pop(context, true);
                 },
               ),
@@ -41,46 +42,44 @@ class ProductViewPage extends StatelessWidget {
 
 
 //========================= Widget EditButton ====================
-  Widget _editButton(BuildContext context, int index) {
-    return IconButton(
-      icon: Icon(Icons.edit),
-      onPressed: () {
-        Navigator.of(context)
-            .push(MaterialPageRoute(builder: (BuildContext context) {
-          return ProductEditPage(
-            product: products[index],
-            updateProduct: updateProduct,
-            productIndex: index,
-          );
-        }));
-      },
-    );
+  Widget _editButton(BuildContext context, int index, ProductsModel model) {
+
+    return  IconButton(
+        icon: Icon(Icons.edit),
+        onPressed: () {
+          model.selectProduct(index);
+          Navigator.of(context)
+              .push(MaterialPageRoute(builder: (BuildContext context) {
+            return ProductEditPage();
+          }));
+        },
+      );
+
   }
 
 //  =========================   Widget _listProduct ====================
-  Widget _listProduct(context, index) {
+  Widget _listProduct(context, index, model) {
     return Dismissible(
-      key: Key(products[index].title),
+      key: Key(model.products[index].title),
       background: Container(
         color: Colors.red,
       ),
 
 //      ================ onDismissed Function -------------------
-
       onDismissed: (DismissDirection direction) {
         if (direction == DismissDirection.endToStart) {
-           _showWarningDialog(context, index);
+           _showWarningDialog(context, index, model);
         }
       },
       child: Column(
         children: <Widget>[
           ListTile(
             leading: CircleAvatar(
-              backgroundImage: AssetImage(products[index].image),
+              backgroundImage: AssetImage(model.products[index].image),
             ),
-            title: Text(products[index].title),
-            subtitle: Text('\$${products[index].price}'),
-            trailing: _editButton(context, index),
+            title: Text(model.products[index].title),
+            subtitle: Text('\$${model.products[index].price}'),
+            trailing: _editButton(context, index, model),
           ),
           Divider()
         ],
@@ -92,10 +91,13 @@ class ProductViewPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      itemBuilder: (BuildContext context, int index) =>
-          _listProduct(context, index),
-      itemCount: products.length,
-    );
+    return ScopedModelDescendant(builder: (BuildContext context, Widget child, ProductsModel model){
+      return  ListView.builder(
+        itemBuilder: (BuildContext context, int index) =>
+            _listProduct(context, index, model),
+        itemCount: model.products.length,
+      );
+    },);
+
   }
 }

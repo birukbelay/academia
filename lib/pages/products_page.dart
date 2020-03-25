@@ -5,7 +5,7 @@ import '../widgets/product/product_card_container.dart';
 
 
 
-class HomePage extends StatelessWidget {
+class ProductsPage extends StatelessWidget {
 
 
 
