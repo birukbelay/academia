@@ -3,7 +3,7 @@ import 'package:scoped_model/scoped_model.dart';
 //my
 
 import './product_edit.dart';
-import '../../scoped_models/products.dart';
+import '../../scoped_models/main_model.dart';
 
 class ProductViewPage extends StatelessWidget {
 
@@ -42,7 +42,7 @@ class ProductViewPage extends StatelessWidget {
 
 
 //========================= Widget EditButton ====================
-  Widget _editButton(BuildContext context, int index, ProductsModel model) {
+  Widget _editButton(BuildContext context, int index, MainModel model) {
 
     return  IconButton(
         icon: Icon(Icons.edit),
@@ -60,7 +60,7 @@ class ProductViewPage extends StatelessWidget {
 //  =========================   Widget _listProduct ====================
   Widget _listProduct(context, index, model) {
     return Dismissible(
-      key: Key(model.products[index].title),
+      key: Key(model.allProducts[index].title),
       background: Container(
         color: Colors.red,
       ),
@@ -75,10 +75,10 @@ class ProductViewPage extends StatelessWidget {
         children: <Widget>[
           ListTile(
             leading: CircleAvatar(
-              backgroundImage: AssetImage(model.products[index].image),
+              backgroundImage: AssetImage(model.allProducts[index].image),
             ),
-            title: Text(model.products[index].title),
-            subtitle: Text('\$${model.products[index].price}'),
+            title: Text(model.allProducts[index].title),
+            subtitle: Text('\$${model.allProducts[index].price}'),
             trailing: _editButton(context, index, model),
           ),
           Divider()
@@ -91,11 +91,11 @@ class ProductViewPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ScopedModelDescendant(builder: (BuildContext context, Widget child, ProductsModel model){
+    return ScopedModelDescendant<MainModel>(builder: (BuildContext context, Widget child, MainModel model){
       return  ListView.builder(
         itemBuilder: (BuildContext context, int index) =>
             _listProduct(context, index, model),
-        itemCount: model.products.length,
+        itemCount: model.allProducts.length,
       );
     },);
 

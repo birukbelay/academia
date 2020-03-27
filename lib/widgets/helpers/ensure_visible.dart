@@ -54,8 +54,6 @@ class EnsureVisibleWhenFocusedState extends State<EnsureVisibleWhenFocused> {
 
     if (!widget.focusNode.hasFocus)
 
-
-
       return;
 
     final RenderObject object = context.findRenderObject();

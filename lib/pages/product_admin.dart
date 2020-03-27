@@ -3,8 +3,8 @@ import 'package:academia1/widgets/ui_element/drawer.dart';
 import 'package:flutter/material.dart';
 //
 
-import 'package:academia1/pages/tabs/product_edit.dart';
-import 'package:academia1/pages/tabs/product_view.dart';
+import './tabs/product_edit.dart';
+import './tabs/product_view.dart';
 //import 'package:academia1/pages/products_page.dart';
 
 class AdminPage extends StatelessWidget {

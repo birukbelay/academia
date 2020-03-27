@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:scoped_model/scoped_model.dart';
 //my imports
-import 'package:academia1/widgets/ui_element/title.dart';
+import '../../widgets/ui_element/title.dart';
 import './price.dart';
-import 'package:academia1/models/product.dart';
-import 'package:academia1/widgets/product/adress_tag.dart';
+import '../../models/product.dart';
+import '../../widgets/product/adress_tag.dart';
+import '../../scoped_models/main_model.dart';
+
 
 class ProductCard extends StatelessWidget {
 
   final Product product;
-  final int index;
+  final int productIndex;
 
 
-  ProductCard(this.product, this.index);
+  ProductCard(this.product, this.productIndex);
 
   Widget _buildTitlePriceRow() {
     return Container(
@@ -37,13 +40,20 @@ class ProductCard extends StatelessWidget {
           icon: Icon(Icons.info),
           color: Theme.of(context).accentColor,
           onPressed: () => Navigator.pushNamed<bool>(
-              context, '/product/' + index.toString()),
+              context, '/product/' + productIndex.toString()),
         ),
-        IconButton(
-          icon: Icon(Icons.favorite_border),
-          color: Colors.red,
-          onPressed: () => Navigator.pushNamed<bool>(
-              context, '/product/' + index.toString()),
+        ScopedModelDescendant<MainModel>(builder: (BuildContext context, Widget child, MainModel model){
+         return IconButton(
+            icon: Icon(model.products[productIndex].isFavorite?Icons.favorite : Icons.favorite_border),
+            color: Colors.red,
+            onPressed: () {
+                model.selectProduct(productIndex);
+                model.toggleFavorite();
+
+            },
+          );
+        },
+
         )
       ],
     );

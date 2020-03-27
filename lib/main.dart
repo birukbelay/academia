@@ -8,7 +8,7 @@ import './pages/products_page.dart';
 import './pages/product_detail.dart';
 import './pages/product_admin.dart';
 
-import './scoped_models/products.dart';
+import './scoped_models/main_model.dart';
 
 void main() {
 //  debugPaintSizeEnabled = true;
@@ -30,8 +30,8 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return ScopedModel<ProductsModel>(
-      model:ProductsModel(),
+    return ScopedModel<MainModel>(
+      model:MainModel(),
       child: MaterialApp(
       title: 'Flutter Demo',
 

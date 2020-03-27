@@ -5,7 +5,7 @@ import 'package:scoped_model/scoped_model.dart';
 
 import './product_card.dart';
 import '../../models/product.dart';
-import '../../scoped_models/products.dart';
+import '../../scoped_models/main_model.dart';
 
 class Products extends StatelessWidget {
 
@@ -32,9 +32,8 @@ class Products extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     print('[product W] build() ');
-
-    return ScopedModelDescendant<ProductsModel>(builder: (BuildContext context, Widget child, ProductsModel model){
-          return _productList(model.products);
+    return ScopedModelDescendant<MainModel>(builder: (BuildContext context, Widget child, MainModel model){
+          return _productList(model.displayedProducts);
     }, );
   }
 }
