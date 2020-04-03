@@ -30,8 +30,9 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    final MainModel model =MainModel();
     return ScopedModel<MainModel>(
-      model:MainModel(),
+      model:model,/*  */
       child: MaterialApp(
       title: 'Flutter Demo',
 
@@ -46,9 +47,9 @@ class _MyAppState extends State<MyApp> {
 //    ============================Routes --------------
       routes: {
         '/': (BuildContext context) =>
-            ProductsPage(),
+            ProductsPage(model),
         '/admin': (BuildContext context) =>
-            AdminPage(),
+            AdminPage(model),
         '/auth': (BuildContext context) => AuthPage(),
       },
 
@@ -73,7 +74,7 @@ class _MyAppState extends State<MyApp> {
       onUnknownRoute: (RouteSettings settings) {
         return MaterialPageRoute(
           builder: (BuildContext context) =>
-              ProductsPage(),
+              ProductsPage(model),
         );
       },
     ),);

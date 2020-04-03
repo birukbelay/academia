@@ -5,9 +5,28 @@ import 'package:scoped_model/scoped_model.dart';
 import './product_edit.dart';
 import '../../scoped_models/main_model.dart';
 
-class ProductViewPage extends StatelessWidget {
+class ProductViewPage extends StatefulWidget {
+  final MainModel model;
 
+  ProductViewPage(this.model);
 
+  @override
+  State<StatefulWidget> createState() {
+
+    return _ProductViewPageState();
+  }
+
+}
+
+class _ProductViewPageState extends State<ProductViewPage>{
+  @override
+  initState(){
+    widget.model.fetchProducts();
+    super.initState();
+
+  }
+
+//  ============== waring dialogue ==================
   _showWarningDialog(BuildContext context, int index, model) {
     showDialog(
         context: context,
@@ -65,7 +84,7 @@ class ProductViewPage extends StatelessWidget {
         color: Colors.red,
       ),
 
-//      ================ onDismissed Function -------------------
+//      ---------------- ===  onDismissed Function ===== -------------------
       onDismissed: (DismissDirection direction) {
         if (direction == DismissDirection.endToStart) {
            _showWarningDialog(context, index, model);

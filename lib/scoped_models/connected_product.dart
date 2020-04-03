@@ -1,4 +1,6 @@
 import 'package:scoped_model/scoped_model.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 //
 import '../models/user.dart';
@@ -8,19 +10,54 @@ class ConnectedProducts extends Model {
   List<Product> _products = [];
   User _authenticatedUser;
   int _selProductIndex;
+  bool _isLoading = false;
+  bool _isauthenticated = false;
 
-  void addProduct(
+
+  static String _dbUrl = 'https://academia-4afa1.firebaseio.com/';
+  String _productUrl = _dbUrl + 'products';
+  String staticImage =
+      'https://m.media-amazon.com/images/S/aplus-media/vc/7ee7f4e8-31f9-475e-b2b4-dbf30c1f0f11._CR189,0,1814,1814_PT0_SX300__.jpg';
+
+//  ===================   add product ===============
+
+  Future<Null> addProduct(
       String title, String image, double price, String description) {
-    final Product newProduct = new Product(
-        title: title,
-        image: image,
-        price: price,
-        description: description,
-        userEmail: _authenticatedUser.email,
-        userId: _authenticatedUser.id);
-    _products.add(newProduct);
-    _selProductIndex = null;
+    _isLoading = true;
     notifyListeners();
+
+    final Map<String, dynamic> productData = {
+      'title': title,
+      'description': description,
+      'image': staticImage,
+      'price': price,
+      'userEmail': _authenticatedUser.email,
+      'userId': _authenticatedUser.id
+    };
+
+    return http
+        .post(_productUrl, body: json.encode(productData))
+        .then((http.Response response) {
+      final Map<String, dynamic> responseData = json.decode(response.body);
+
+      final Product newProduct = new Product(
+          id: responseData['name'],
+          title: title,
+          image: image,
+          price: price,
+          description: description,
+          userEmail: _authenticatedUser.email,
+          userId: _authenticatedUser.id);
+
+      _products.add(newProduct);
+      _selProductIndex = null;
+      _isLoading = false;
+      notifyListeners();
+    }).catchError((e) {
+      _isLoading = false;
+      notifyListeners();
+      print("error...: $e");
+    });
   }
 }
 
@@ -28,18 +65,62 @@ class ConnectedProducts extends Model {
 mixin UserModel on ConnectedProducts {
   void login(String email, String password) {
     _authenticatedUser = User(id: 'q123', email: email, password: password);
+    _isauthenticated = true;
+    notifyListeners();
+  }
+
+  bool get isAuthenticated {
+    return _isauthenticated;
   }
 }
-//===========================product model class ===============================
+
+//================== product model mixin ==================
 
 mixin ProductsModel on ConnectedProducts {
   bool _showFavorites = false;
+
+//  ================== fetchProducts=================
+  Future<Null> fetchProducts() {
+    _isLoading = true;
+    notifyListeners();
+
+   return http.get(_productUrl+'.json').then((http.Response response) {
+      print(response.body);
+      final List<Product> fetchedProductsList = [];
+      final Map<String, dynamic> productListData = json.decode(response.body);
+
+      if (productListData == null) {
+        _isLoading = false;
+        notifyListeners();
+        return;
+      }
+      productListData.forEach((String productId, dynamic productData) {
+        final Product product = Product(
+            id: productId,
+            title: productData['title'],
+            description: productData['description'],
+            image: productData['image'],
+            price: productData['price'],
+            userEmail: productData['userEmail'],
+            userId: productData['userId']);
+        fetchedProductsList.add(product);
+      });
+
+      _products = fetchedProductsList;
+      _isLoading = false;
+      notifyListeners();
+    }).catchError((e) {
+      _isLoading = false;
+      notifyListeners();
+      print("error...: $e");
+    });
+  }
 
   List<Product> get allProducts {
     return List.from(_products);
   }
 
-  List<Product> get displayedProducts {
+  List<Product> get displayedFavoriteProducts {
     if (_showFavorites) {
       return _products.where((Product product) => product.isFavorite).toList();
     }
@@ -48,6 +129,10 @@ mixin ProductsModel on ConnectedProducts {
 
   int get selectedProductIndex {
     return _selProductIndex;
+  }
+
+  void selectProduct(int index) {
+    _selProductIndex = index;
   }
 
   Product get selectedProduct {
@@ -61,29 +146,67 @@ mixin ProductsModel on ConnectedProducts {
     return _showFavorites;
   }
 
-  void updateProduct(
-      String title, String image, double price, String description) {
-    final Product updatedProduct = new Product(
-        title: title,
-        image: image,
-        price: price,
-        description: description,
-        userEmail: selectedProduct.userEmail,
-        userId: selectedProduct.userId);
-    _products[selectedProductIndex] = updatedProduct;
-    _selProductIndex = null;
-  }
+//  =============== updateProduct ========================
 
-  void deleteProduct() {
-    _products.removeAt(selectedProductIndex);
-    _selProductIndex = null;
+  Future<Null> updateProduct(String title, String image, double price, String description) {
+
+    _isLoading= true;
     notifyListeners();
+
+    final Map<String, dynamic> updateData = {
+      'title': title,
+      'description': description,
+      'image': staticImage,
+      'price': price,
+      'userEmail': _authenticatedUser.email,
+      'userId': _authenticatedUser.id
+    };
+
+  return  http.put(_productUrl+'/${selectedProduct.id}.json', body: json.encode(updateData))
+    .then((http.Response response){
+
+      _isLoading= false;
+
+      final Product updatedProduct = new Product(
+          id: selectedProduct.id,
+          title: title,
+          image: image,
+          price: price,
+          description: description,
+          userEmail: selectedProduct.userEmail,
+          userId: selectedProduct.userId);
+      _products[selectedProductIndex] = updatedProduct;
+      notifyListeners();
+      _selProductIndex = null;
+    });
+
+
+  }
+//=======  delete product ============
+  void deleteProduct() {
+
+    _isLoading= true;
+    final deletedId= selectedProduct.id;
+//    _products.removeAt(selectedProductIndex);
+    http.delete(_productUrl+'/${deletedId}.json')
+    .then((http.Response response){
+      _isLoading= false;
+      _products.removeAt(selectedProductIndex);
+      notifyListeners();
+      _selProductIndex = null;
+
+    });
+
+
+
   }
 
   void toggleFavorite() {
     final bool isCurrentlyFavorite = selectedProduct.isFavorite;
     final bool newFavStatus = !isCurrentlyFavorite;
+
     final Product updatedProduct = Product(
+      id: selectedProduct.id,
       title: selectedProduct.title,
       description: selectedProduct.description,
       image: selectedProduct.image,
@@ -97,12 +220,14 @@ mixin ProductsModel on ConnectedProducts {
     notifyListeners();
   }
 
-  void selectProduct(int index) {
-    _selProductIndex = index;
-  }
-
   void toggleDisplayFavorites() {
     _showFavorites = !_showFavorites;
     notifyListeners();
+  }
+}
+
+mixin UtilityModel on ConnectedProducts {
+  bool get isLoading {
+    return _isLoading;
   }
 }

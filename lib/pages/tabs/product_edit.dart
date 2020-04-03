@@ -15,6 +15,7 @@ class ProductEditPage extends StatefulWidget {
 
 //=========================  state of the widget  ==============================
 class _ProductsEditPage extends State<ProductEditPage> {
+
   final Map<String, dynamic> _formData = {
     'title': '',
     'description': '',
@@ -41,6 +42,7 @@ class _ProductsEditPage extends State<ProductEditPage> {
           if (value.isEmpty) {
             return 'title required';
           }
+          return null;
         },
         onSaved: (String value) {
           _formData['title'] = value;
@@ -66,6 +68,7 @@ class _ProductsEditPage extends State<ProductEditPage> {
               !RegExp(r'^(?:[1-9]\d*|0)?(?:\.\d+)?$').hasMatch(value)) {
             return 'this value is a number and required';
           }
+          return null;
         },
         onSaved: (String value) {
           _formData['price'] = double.parse(value);
@@ -81,12 +84,14 @@ class _ProductsEditPage extends State<ProductEditPage> {
       focusNode: _descriptionFocusNode,
       child: TextFormField(
         maxLines: 2,
+
         decoration: InputDecoration(labelText: 'description'),
         initialValue: product == null ? '' : product.description.toString(),
         validator: (String value) {
           if (value.isEmpty || value.length < 5) {
             return '* description must be > 5 letters';
           }
+          return null;
         },
         onSaved: (String value) {
           _formData['description'] = value;
@@ -97,27 +102,22 @@ class _ProductsEditPage extends State<ProductEditPage> {
 
   //  ============================  build bottom modal ====================
   Widget _buildModal() {
-    return Card(
-      child: Column(
-        children: <Widget>[
-          Image.asset(_formData['image']),
-          ListTile(
-            leading: Image.asset(_formData['image']),
-            title: Text(_formData['title']),
-          ),
-        ],
-      ),
+    return ListTile(
+      leading: Image.asset(_formData['image']),
+      title: Text(_formData['title']),
     );
   }
 
   Widget _buildSubmitButton() {
     return ScopedModelDescendant<MainModel>(
       builder: (BuildContext context, Widget widget, MainModel model) {
-        return RaisedButton(
-            child: Text('Save'),
-            textColor: Colors.white,
-            onPressed: () => _submitForm(model.addProduct, model.updateProduct,
-                model.selectedProductIndex));
+        return model.isLoading
+            ? Center(child: CircularProgressIndicator())
+            : RaisedButton(
+                child: Text('Save'),
+                textColor: Colors.white,
+                onPressed: () => _submitForm(model.addProduct,
+                    model.updateProduct,model.selectProduct, model.selectedProductIndex));
       },
     );
   }
@@ -152,7 +152,7 @@ class _ProductsEditPage extends State<ProductEditPage> {
 
 //  ======================= Function Edit item =========================
 
-  void _submitForm(Function addProduct, Function updateProduct,
+  void _submitForm(Function addProduct, Function updateProduct, selectProduct,
       [int selectedProductIndex]) {
     if (!_formKey.currentState.validate()) {
       return;
@@ -161,12 +161,19 @@ class _ProductsEditPage extends State<ProductEditPage> {
 
     if (selectedProductIndex == null) {
       addProduct(_formData['title'], _formData['image'], _formData['price'],
-          _formData['description']);
+              _formData['description'])
+          .then((_) => Navigator
+          .pushReplacementNamed(context, '/')
+          .then((_)=>selectProduct(null))
+              );
     } else {
       updateProduct(_formData['title'], _formData['image'], _formData['price'],
-          _formData['description']);
+          _formData['description'])
+          .then((_) => Navigator
+          .pushReplacementNamed(context, '/')
+          .then((_)=>selectProduct(null))
+      );
     }
-    Navigator.pushReplacementNamed(context, '/');
 
     showModalBottomSheet(
         context: context,

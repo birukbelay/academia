@@ -33,7 +33,7 @@ class Products extends StatelessWidget {
   Widget build(BuildContext context) {
     print('[product W] build() ');
     return ScopedModelDescendant<MainModel>(builder: (BuildContext context, Widget child, MainModel model){
-          return _productList(model.displayedProducts);
+          return _productList(model.displayedFavoriteProducts);
     }, );
   }
 }
