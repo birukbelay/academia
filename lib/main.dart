@@ -58,6 +58,7 @@ class _MyAppState extends State<MyApp> {
         final List<String> pathElements = settings.name.split('/');
         if (pathElements[0] != '') {
           return null;
+
         }
         if (pathElements[1] == 'product') {
           final int index = int.parse(pathElements[2]);
