@@ -9,10 +9,9 @@ import '../models/product.dart';
 class ConnectedProducts extends Model {
   List<Product> _products = [];
   User _authenticatedUser;
-  int _selProductIndex;
+  String _selProductId;
   bool _isLoading = false;
   bool _isauthenticated = false;
-
 
   static String _dbUrl = 'https://academia-4afa1.firebaseio.com/';
   String _productUrl = _dbUrl + 'products';
@@ -21,7 +20,7 @@ class ConnectedProducts extends Model {
 
 //  ===================   add product ===============
 
-  Future<Null> addProduct(
+  Future<bool> addProduct(
       String title, String image, double price, String description) {
     _isLoading = true;
     notifyListeners();
@@ -38,6 +37,12 @@ class ConnectedProducts extends Model {
     return http
         .post(_productUrl, body: json.encode(productData))
         .then((http.Response response) {
+      if (response.statusCode != 200 || response.statusCode != 201) {
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+
       final Map<String, dynamic> responseData = json.decode(response.body);
 
       final Product newProduct = new Product(
@@ -50,41 +55,68 @@ class ConnectedProducts extends Model {
           userId: _authenticatedUser.id);
 
       _products.add(newProduct);
-      _selProductIndex = null;
+      _selProductId = null;
       _isLoading = false;
       notifyListeners();
+      return true;
     }).catchError((e) {
       _isLoading = false;
       notifyListeners();
       print("error...: $e");
+      return false;
     });
   }
 }
 
-//===========================  user model class ======================
-mixin UserModel on ConnectedProducts {
-  void login(String email, String password) {
-    _authenticatedUser = User(id: 'q123', email: email, password: password);
-    _isauthenticated = true;
-    notifyListeners();
-  }
-
-  bool get isAuthenticated {
-    return _isauthenticated;
-  }
-}
-
-//================== product model mixin ==================
+//######================== product model mixin ==================
 
 mixin ProductsModel on ConnectedProducts {
   bool _showFavorites = false;
 
-//  ================== fetchProducts=================
+  List<Product> get allProducts {
+    return List.from(_products);
+  }
+
+  List<Product> get displayedFavoriteProducts {
+    if (_showFavorites) {
+      return _products.where((Product product) => product.isFavorite).toList();
+    }
+    return List.from(_products);
+  }
+
+  int get selectedProductIndex {
+    return _products.indexWhere((Product product) {
+      return product.id == _selProductId;
+    });
+  }
+
+  String get selectedProductId {
+    return _selProductId;
+  }
+
+  void selectProduct(String productId) {
+    _selProductId = productId;
+  }
+
+  Product get selectedProduct {
+    if (selectedProductId == null) {
+      return null;
+    }
+    return _products.firstWhere((Product product) {
+      return product.id == _selProductId;
+    });
+  }
+
+  bool get displayFavOnly {
+    return _showFavorites;
+  }
+
+  // -------------------=========1 fetchProducts ========--------------
   Future<Null> fetchProducts() {
     _isLoading = true;
     notifyListeners();
 
-   return http.get(_productUrl+'.json').then((http.Response response) {
+    return http.get(_productUrl + '.json').then<Null>((http.Response response) {
       print(response.body);
       final List<Product> fetchedProductsList = [];
       final Map<String, dynamic> productListData = json.decode(response.body);
@@ -94,6 +126,7 @@ mixin ProductsModel on ConnectedProducts {
         notifyListeners();
         return;
       }
+
       productListData.forEach((String productId, dynamic productData) {
         final Product product = Product(
             id: productId,
@@ -109,48 +142,21 @@ mixin ProductsModel on ConnectedProducts {
       _products = fetchedProductsList;
       _isLoading = false;
       notifyListeners();
+      _selProductId = null;
     }).catchError((e) {
       _isLoading = false;
       notifyListeners();
+      _selProductId = null;
       print("error...: $e");
+      return false;
     });
-  }
+  } //fetch products
 
-  List<Product> get allProducts {
-    return List.from(_products);
-  }
+//  ---------------------====2 updateProduct ====---------------------
 
-  List<Product> get displayedFavoriteProducts {
-    if (_showFavorites) {
-      return _products.where((Product product) => product.isFavorite).toList();
-    }
-    return List.from(_products);
-  }
-
-  int get selectedProductIndex {
-    return _selProductIndex;
-  }
-
-  void selectProduct(int index) {
-    _selProductIndex = index;
-  }
-
-  Product get selectedProduct {
-    if (selectedProductIndex == null) {
-      return null;
-    }
-    return _products[selectedProductIndex];
-  }
-
-  bool get displayFavOnly {
-    return _showFavorites;
-  }
-
-//  =============== updateProduct ========================
-
-  Future<Null> updateProduct(String title, String image, double price, String description) {
-
-    _isLoading= true;
+  Future<bool> updateProduct(
+      String title, String image, double price, String description) {
+    _isLoading = true;
     notifyListeners();
 
     final Map<String, dynamic> updateData = {
@@ -162,10 +168,11 @@ mixin ProductsModel on ConnectedProducts {
       'userId': _authenticatedUser.id
     };
 
-  return  http.put(_productUrl+'/${selectedProduct.id}.json', body: json.encode(updateData))
-    .then((http.Response response){
-
-      _isLoading= false;
+    return http
+        .put(_productUrl + '/${selectedProduct.id}.json',
+            body: json.encode(updateData))
+        .then((http.Response response) {
+      _isLoading = false;
 
       final Product updatedProduct = new Product(
           id: selectedProduct.id,
@@ -177,29 +184,42 @@ mixin ProductsModel on ConnectedProducts {
           userId: selectedProduct.userId);
       _products[selectedProductIndex] = updatedProduct;
       notifyListeners();
-      _selProductIndex = null;
+      return true;
+//      _selProductIndex = null;
+    }).catchError((e) {
+      _isLoading = false;
+      notifyListeners();
+      _selProductId = null;
+      print("error...: $e");
+      return false;
+
     });
-
-
   }
-//=======  delete product ============
-  void deleteProduct() {
 
-    _isLoading= true;
-    final deletedId= selectedProduct.id;
-//    _products.removeAt(selectedProductIndex);
-    http.delete(_productUrl+'/${deletedId}.json')
-    .then((http.Response response){
-      _isLoading= false;
+//--------------------===3  delete product ======-----------
+  Future<bool> deleteProduct() {
+    _isLoading = true;
+    final deletedId = selectedProduct.id;
+    _products.removeAt(selectedProductIndex);
+    return http
+        .delete(_productUrl + '/$deletedId.json')
+        .then((http.Response response) {
+      _isLoading = false;
       _products.removeAt(selectedProductIndex);
       notifyListeners();
-      _selProductIndex = null;
-
+//      _selProductIndex = null;
+      return true;
+    }).catchError((e) {
+      _isLoading = false;
+      notifyListeners();
+      _selProductId = null;
+      print("error...: $e");
+      return false;
     });
 
-
-
   }
+
+//  ---------------  =======4 favToggle =====--------
 
   void toggleFavorite() {
     final bool isCurrentlyFavorite = selectedProduct.isFavorite;
@@ -216,13 +236,26 @@ mixin ProductsModel on ConnectedProducts {
       isFavorite: newFavStatus,
     );
     _products[selectedProductIndex] = updatedProduct;
-    _selProductIndex = null;
+//    _selProductIndex = null;
     notifyListeners();
   }
 
   void toggleDisplayFavorites() {
     _showFavorites = !_showFavorites;
     notifyListeners();
+  }
+}
+
+//#####===========================  user model mixin ======================
+mixin UserModel on ConnectedProducts {
+  void login(String email, String password) {
+    _authenticatedUser = User(id: 'q123', email: email, password: password);
+    _isauthenticated = true;
+    notifyListeners();
+  }
+
+  bool get isAuthenticated {
+    return _isauthenticated;
   }
 }
 

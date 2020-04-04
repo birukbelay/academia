@@ -26,7 +26,30 @@ class _ProductViewPageState extends State<ProductViewPage>{
 
   }
 
-//  ============== waring dialogue ==================
+
+
+
+
+
+
+//========================= Widget EditButton ====================
+  Widget _editButton(BuildContext context, int index, MainModel model) {
+
+    return  IconButton(
+        icon: Icon(Icons.edit),
+        onPressed: () {
+          model.selectProduct(model.allProducts[index].id);
+          Navigator.of(context)
+              .push(MaterialPageRoute(builder: (BuildContext context) {
+            return ProductEditPage();
+          }));
+        },
+      );
+
+  }
+
+
+  //  ----------------==== waring dialogue ========-----------
   _showWarningDialog(BuildContext context, int index, model) {
     showDialog(
         context: context,
@@ -45,7 +68,7 @@ class _ProductViewPageState extends State<ProductViewPage>{
                 child: Text('Delete'),
                 onPressed: () {
                   Navigator.pop(context);
-                  model.selectProduct(index);
+                  model.selectProduct(model.allProducts[index].id);
                   model.deleteProduct();
 
 //                  Navigator.pop(context, true);
@@ -56,33 +79,14 @@ class _ProductViewPageState extends State<ProductViewPage>{
         });
   }
 
-
-
-
-
-//========================= Widget EditButton ====================
-  Widget _editButton(BuildContext context, int index, MainModel model) {
-
-    return  IconButton(
-        icon: Icon(Icons.edit),
-        onPressed: () {
-          model.selectProduct(index);
-          Navigator.of(context)
-              .push(MaterialPageRoute(builder: (BuildContext context) {
-            return ProductEditPage();
-          }));
-        },
-      );
-
-  }
-
-//  =========================   Widget _listProduct ====================
+//  ==============---------   Widget _listProduct ----------============
   Widget _listProduct(context, index, model) {
     return Dismissible(
       key: Key(model.allProducts[index].title),
       background: Container(
         color: Colors.red,
       ),
+
 
 //      ---------------- ===  onDismissed Function ===== -------------------
       onDismissed: (DismissDirection direction) {

@@ -15,7 +15,6 @@ class ProductEditPage extends StatefulWidget {
 
 //=========================  state of the widget  ==============================
 class _ProductsEditPage extends State<ProductEditPage> {
-
   final Map<String, dynamic> _formData = {
     'title': '',
     'description': '',
@@ -84,7 +83,6 @@ class _ProductsEditPage extends State<ProductEditPage> {
       focusNode: _descriptionFocusNode,
       child: TextFormField(
         maxLines: 2,
-
         decoration: InputDecoration(labelText: 'description'),
         initialValue: product == null ? '' : product.description.toString(),
         validator: (String value) {
@@ -116,8 +114,11 @@ class _ProductsEditPage extends State<ProductEditPage> {
             : RaisedButton(
                 child: Text('Save'),
                 textColor: Colors.white,
-                onPressed: () => _submitForm(model.addProduct,
-                    model.updateProduct,model.selectProduct, model.selectedProductIndex));
+                onPressed: () => _submitForm(
+                    model.addProduct,
+                    model.updateProduct,
+                    model.selectProduct,
+                    model.selectedProductIndex));
       },
     );
   }
@@ -159,20 +160,37 @@ class _ProductsEditPage extends State<ProductEditPage> {
     }
     _formKey.currentState.save();
 
-    if (selectedProductIndex == null) {
+    if (selectedProductIndex == -1) {
       addProduct(_formData['title'], _formData['image'], _formData['price'],
               _formData['description'])
-          .then((_) => Navigator
-          .pushReplacementNamed(context, '/')
-          .then((_)=>selectProduct(null))
-              );
+          .then((bool sucess) {
+            if(sucess){
+              Navigator
+                  .pushReplacementNamed(context, '/')
+                  .then((_)=>selectProduct(null));
+            }else{
+              showDialog(
+                  context: context,
+                  builder: (context){
+                return AlertDialog(
+                  title: Text('error happened'),
+                  content: Text('please try again'),
+                  actions: <Widget>[
+                    FlatButton(
+                      onPressed: ()=>Navigator.of(context).pop(),
+                      child: Text('Okay'),
+                    )
+                  ],
+                );
+              });
+            }
+
+      });
     } else {
       updateProduct(_formData['title'], _formData['image'], _formData['price'],
-          _formData['description'])
-          .then((_) => Navigator
-          .pushReplacementNamed(context, '/')
-          .then((_)=>selectProduct(null))
-      );
+              _formData['description'])
+          .then((_) => Navigator.pushReplacementNamed(context, '/')
+              .then((_) => selectProduct(null)));
     }
 
     showModalBottomSheet(
@@ -191,7 +209,7 @@ class _ProductsEditPage extends State<ProductEditPage> {
             _buildPageContent(context, model.selectedProduct);
 
         //if model.product == null ? pageContent  : Scaffold
-        return model.selectedProductIndex == null
+        return model.selectedProductIndex == -1
             ? pageContent
             : Scaffold(
                 appBar: AppBar(
