@@ -18,54 +18,7 @@ class ConnectedProducts extends Model {
   String staticImage =
       'https://m.media-amazon.com/images/S/aplus-media/vc/7ee7f4e8-31f9-475e-b2b4-dbf30c1f0f11._CR189,0,1814,1814_PT0_SX300__.jpg';
 
-//  ===================   add product ===============
 
-  Future<bool> addProduct(
-      String title, String image, double price, String description) {
-    _isLoading = true;
-    notifyListeners();
-
-    final Map<String, dynamic> productData = {
-      'title': title,
-      'description': description,
-      'image': staticImage,
-      'price': price,
-      'userEmail': _authenticatedUser.email,
-      'userId': _authenticatedUser.id
-    };
-
-    return http
-        .post(_productUrl, body: json.encode(productData))
-        .then((http.Response response) {
-      if (response.statusCode != 200 || response.statusCode != 201) {
-        _isLoading = false;
-        notifyListeners();
-        return false;
-      }
-
-      final Map<String, dynamic> responseData = json.decode(response.body);
-
-      final Product newProduct = new Product(
-          id: responseData['name'],
-          title: title,
-          image: image,
-          price: price,
-          description: description,
-          userEmail: _authenticatedUser.email,
-          userId: _authenticatedUser.id);
-
-      _products.add(newProduct);
-      _selProductId = null;
-      _isLoading = false;
-      notifyListeners();
-      return true;
-    }).catchError((e) {
-      _isLoading = false;
-      notifyListeners();
-      print("error...: $e");
-      return false;
-    });
-  }
 }
 
 //######================== product model mixin ==================
@@ -152,6 +105,56 @@ mixin ProductsModel on ConnectedProducts {
     });
   } //fetch products
 
+  //  ===================   add product ===============
+
+  Future<bool> addProduct(
+      String title, String image, double price, String description) async {
+    _isLoading = true;
+    notifyListeners();
+
+    final Map<String, dynamic> productData = {
+      'title': title,
+      'description': description,
+      'image': staticImage,
+      'price': price,
+      'userEmail': _authenticatedUser.email,
+      'userId': _authenticatedUser.id
+    };
+
+    try {
+      final http.Response response =
+      await http.post(_productUrl, body: json.encode(productData));
+
+      if (response.statusCode != 200 || response.statusCode != 201) {
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+
+      final Map<String, dynamic> responseData = json.decode(response.body);
+
+      final Product newProduct = new Product(
+          id: responseData['name'],
+          title: title,
+          image: image,
+          price: price,
+          description: description,
+          userEmail: _authenticatedUser.email,
+          userId: _authenticatedUser.id);
+
+      _products.add(newProduct);
+      _selProductId = null;
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _isLoading = false;
+      notifyListeners();
+      print("error...: $e");
+      return false;
+    }
+  }
+
 //  ---------------------====2 updateProduct ====---------------------
 
   Future<bool> updateProduct(
@@ -192,7 +195,6 @@ mixin ProductsModel on ConnectedProducts {
       _selProductId = null;
       print("error...: $e");
       return false;
-
     });
   }
 
@@ -204,8 +206,9 @@ mixin ProductsModel on ConnectedProducts {
     return http
         .delete(_productUrl + '/$deletedId.json')
         .then((http.Response response) {
-      _isLoading = false;
+
       _products.removeAt(selectedProductIndex);
+      _isLoading = false;
       notifyListeners();
 //      _selProductIndex = null;
       return true;
@@ -216,7 +219,6 @@ mixin ProductsModel on ConnectedProducts {
       print("error...: $e");
       return false;
     });
-
   }
 
 //  ---------------  =======4 favToggle =====--------
@@ -247,18 +249,91 @@ mixin ProductsModel on ConnectedProducts {
 }
 
 //#####===========================  user model mixin ======================
+
 mixin UserModel on ConnectedProducts {
-  void login(String email, String password) {
-    _authenticatedUser = User(id: 'q123', email: email, password: password);
-    _isauthenticated = true;
+
+//  ----------------===== Login ========----------
+
+  Future<Map<String, dynamic>> login(String email, String password) async{
+    _isLoading=true;
     notifyListeners();
-  }
+    final Map<String, dynamic> authData ={
+      'email':email,
+      'password':password,
+      'returnSecureToken':true
+    };
+//    TODO  Login  backend needs to be set up
+    final http.Response response =await http.post('https:the uri?key=kldkflkjkj',body: json.encode(authData),
+    headers: {'Content-type': 'application/json'});
+    final Map<String, dynamic> responseData = json.decode(response.body);
+    bool hasError =true;
+    String message = 'something went wrong';
+    if(responseData.containsKey('idToken')){
+      hasError=false;
+      message ='Authentication sucess';
+
+    }else if(responseData['error']['message']=='EMAIL_NOT_FOUND'){
+      message='EMAIL OR PASSWORD WRONG';
+    }
+    else if(responseData['error']['message']=='INVALID_PASSWORD'){
+      message='EMAIL OR PASSWORD WRONG';
+    }
+
+    print(response);
+    _isauthenticated = true;
+    _isLoading=false;
+    notifyListeners();
+
+//    @@@ CHANGED TO !HASERROR so that it will be fine in teh product edit page
+    return{'sucess': !hasError, 'message':message};
+
+
+//    _authenticatedUser = User(id: 'q123', email: email, password: password);
+//  _isauthenticated = true;
+
+}
 
   bool get isAuthenticated {
     return _isauthenticated;
   }
+
+//  =========--------signup------============
+
+  Future<Map<String, dynamic>> signup(String email, String password) async{
+    _isLoading=true;
+    notifyListeners();
+    final Map<String, dynamic> authData ={
+      'email':email,
+      'password':password,
+      'returnSecureToken':true
+    };
+    //  TODO SignUp back end not setup
+    final http.Response response =await http.post('https:my url with secure api',
+          body: json.encode(authData),
+      headers: {'Content-Type':'application/json'}
+    );
+    final Map<String, dynamic> responseData = json.decode(response.body);
+    bool hasError =true;
+    String message = 'something went wrong';
+    if(responseData.containsKey('idToken')){
+      hasError=false;
+      message ='Authentication sucess';
+
+    }else if(responseData['error']['message']=='EMAIL_EXISTS'){
+      message='this email alreaady exists';
+    }
+
+    print(response);
+    _isauthenticated = true;
+    _isLoading=true;
+    notifyListeners();
+//    @@@ CHANGED TO !HASERROR so that it will be fine in teh product edit page
+    return{'sucess': !hasError, 'message':message};
+
+  }
 }
 
+//========================== model utility ====================
 mixin UtilityModel on ConnectedProducts {
   bool get isLoading {
     return _isLoading;
