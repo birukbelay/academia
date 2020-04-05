@@ -1,10 +1,13 @@
 import 'package:scoped_model/scoped_model.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:async';
+import 'package:shared_preferences/shared_preferences.dart';
 
 //
 import '../models/user.dart';
 import '../models/product.dart';
+import '../models/auth.dart';
 
 class ConnectedProducts extends Model {
   List<Product> _products = [];
@@ -17,8 +20,6 @@ class ConnectedProducts extends Model {
   String _productUrl = _dbUrl + 'products';
   String staticImage =
       'https://m.media-amazon.com/images/S/aplus-media/vc/7ee7f4e8-31f9-475e-b2b4-dbf30c1f0f11._CR189,0,1814,1814_PT0_SX300__.jpg';
-
-
 }
 
 //######================== product model mixin ==================
@@ -69,7 +70,9 @@ mixin ProductsModel on ConnectedProducts {
     _isLoading = true;
     notifyListeners();
 
-    return http.get(_productUrl + '.json').then<Null>((http.Response response) {
+    return http
+        .get(_productUrl + '.json?auth=${_authenticatedUser.token}')
+        .then<Null>((http.Response response) {
       print(response.body);
       final List<Product> fetchedProductsList = [];
       final Map<String, dynamic> productListData = json.decode(response.body);
@@ -105,7 +108,7 @@ mixin ProductsModel on ConnectedProducts {
     });
   } //fetch products
 
-  //  ===================   add product ===============
+  //  =--------------------=========   add product ==------------------------=
 
   Future<bool> addProduct(
       String title, String image, double price, String description) async {
@@ -122,8 +125,9 @@ mixin ProductsModel on ConnectedProducts {
     };
 
     try {
-      final http.Response response =
-      await http.post(_productUrl, body: json.encode(productData));
+      final http.Response response = await http.post(
+          _productUrl + '.json?auth=${_authenticatedUser.token}',
+          body: json.encode(productData));
 
       if (response.statusCode != 200 || response.statusCode != 201) {
         _isLoading = false;
@@ -172,7 +176,9 @@ mixin ProductsModel on ConnectedProducts {
     };
 
     return http
-        .put(_productUrl + '/${selectedProduct.id}.json',
+        .put(
+            _productUrl +
+                '/${selectedProduct.id}.json?auth=${_authenticatedUser.token}',
             body: json.encode(updateData))
         .then((http.Response response) {
       _isLoading = false;
@@ -204,9 +210,9 @@ mixin ProductsModel on ConnectedProducts {
     final deletedId = selectedProduct.id;
     _products.removeAt(selectedProductIndex);
     return http
-        .delete(_productUrl + '/$deletedId.json')
+        .delete(
+            _productUrl + '/$deletedId.json?auth=${_authenticatedUser.token}')
         .then((http.Response response) {
-
       _products.removeAt(selectedProductIndex);
       _isLoading = false;
       notifyListeners();
@@ -252,84 +258,111 @@ mixin ProductsModel on ConnectedProducts {
 
 mixin UserModel on ConnectedProducts {
 
-//  ----------------===== Login ========----------
+  Timer _authTimer;
+  User get user {
+    return _authenticatedUser;
+  }
 
-  Future<Map<String, dynamic>> login(String email, String password) async{
-    _isLoading=true;
+//  ----------------===== Authenticate ========----------
+
+  Future<Map<String, dynamic>> Authenticate(String email, String password,
+      [AuthMode mode = AuthMode.Login]) async {
+    _isLoading = true;
     notifyListeners();
-    final Map<String, dynamic> authData ={
-      'email':email,
-      'password':password,
-      'returnSecureToken':true
+    final Map<String, dynamic> authData = {
+      'email': email,
+      'password': password,
+      'returnSecureToken': true
     };
-//    TODO  Login  backend needs to be set up
-    final http.Response response =await http.post('https:the uri?key=kldkflkjkj',body: json.encode(authData),
-    headers: {'Content-type': 'application/json'});
-    final Map<String, dynamic> responseData = json.decode(response.body);
-    bool hasError =true;
-    String message = 'something went wrong';
-    if(responseData.containsKey('idToken')){
-      hasError=false;
-      message ='Authentication sucess';
 
-    }else if(responseData['error']['message']=='EMAIL_NOT_FOUND'){
-      message='EMAIL OR PASSWORD WRONG';
+    http.Response response;
+    if (mode == AuthMode.Login) {
+      //TODO | Auth  backend needs to be set up
+      //TODO | u must handle the response from the database
+      response = await http.post('https:the uri?key=kldkflkjkj',
+          body: json.encode(authData),
+          headers: {'Content-type': 'application/json'});
+    } else {
+      response = await http.post('https:my url with secure api',
+          body: json.encode(authData),
+          headers: {'Content-Type': 'application/json'});
     }
-    else if(responseData['error']['message']=='INVALID_PASSWORD'){
-      message='EMAIL OR PASSWORD WRONG';
+
+    final Map<String, dynamic> responseData = json.decode(response.body);
+    bool hasError = true;
+    String message = 'something went wrong';
+    if (responseData.containsKey('idToken')) {
+      hasError = false;
+      message = 'Authentication sucess';
+      _authenticatedUser = User(
+          id: responseData['uid'],
+          email: responseData['email'],
+          token: responseData['idToken']);
+
+//      TODO  EXPIRESIN IS A RESPONSE FROM THE FIRE
+      setAuthTimeout(int.parse(responseData['expiresIn']));
+
+      final DateTime now = DateTime.now();
+      final DateTime expiryTime = now.add(Duration(seconds: int.parse(responseData['expiresIn'])));
+
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setString('token', responseData['idToken']);
+      prefs.setString('email', email);
+      prefs.setString('userId', responseData['localId']);
+      prefs.setString('expiryTime', expiryTime.toIso8601String());
+      _isauthenticated = true;
+    } else if (responseData['error']['message'] == 'EMAIL_NOT_FOUND') {
+      message = 'EMAIL OR PASSWORD WRONG';
+    } else if (responseData['error']['message'] == 'INVALID_PASSWORD') {
+      message = 'EMAIL OR PASSWORD WRONG';
+    } else if (responseData['error']['message'] == 'EMAIL_EXISTS') {
+      message = 'this email alreaady exists';
     }
 
     print(response);
-    _isauthenticated = true;
-    _isLoading=false;
+//    _isauthenticated = true;
+    _isLoading = false;
     notifyListeners();
 
 //    @@@ CHANGED TO !HASERROR so that it will be fine in teh product edit page
-    return{'sucess': !hasError, 'message':message};
+    return {'sucess': !hasError, 'message': message};
+  }
 
+  void autoAuthenticate() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String token = prefs.getString('token');
+    final String expiryTime = prefs.getString('expiryTime');
+    final parsedExpiryTime = DateTime.parse(expiryTime);
+    if (token != null) {
+      final DateTime now = DateTime.parse(expiryTime);
+      if (parsedExpiryTime.isBefore(now)){
+        _authenticatedUser=null;
+        notifyListeners();
+        return;
+      }
+      final String email = prefs.getString('email');
+      final String userId = prefs.getString('userId');
+      final int tokenLifespan = parsedExpiryTime.difference(now).inSeconds;
+      setAuthTimeout(tokenLifespan);
+      _authenticatedUser = User(id: userId, email: email, token: token);
+      notifyListeners();
+    }
+  }
 
-//    _authenticatedUser = User(id: 'q123', email: email, password: password);
-//  _isauthenticated = true;
-
-}
+  void logout() async{
+    _authenticatedUser =null;
+    _authTimer.cancel();
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.remove('token');
+    prefs.remove('email');
+    prefs.remove('userId');
+  }
+  void setAuthTimeout(int time){
+    _authTimer=Timer(Duration(seconds:time),  logout);
+  }
 
   bool get isAuthenticated {
     return _isauthenticated;
-  }
-
-//  =========--------signup------============
-
-  Future<Map<String, dynamic>> signup(String email, String password) async{
-    _isLoading=true;
-    notifyListeners();
-    final Map<String, dynamic> authData ={
-      'email':email,
-      'password':password,
-      'returnSecureToken':true
-    };
-    //  TODO SignUp back end not setup
-    final http.Response response =await http.post('https:my url with secure api',
-          body: json.encode(authData),
-      headers: {'Content-Type':'application/json'}
-    );
-    final Map<String, dynamic> responseData = json.decode(response.body);
-    bool hasError =true;
-    String message = 'something went wrong';
-    if(responseData.containsKey('idToken')){
-      hasError=false;
-      message ='Authentication sucess';
-
-    }else if(responseData['error']['message']=='EMAIL_EXISTS'){
-      message='this email alreaady exists';
-    }
-
-    print(response);
-    _isauthenticated = true;
-    _isLoading=true;
-    notifyListeners();
-//    @@@ CHANGED TO !HASERROR so that it will be fine in teh product edit page
-    return{'sucess': !hasError, 'message':message};
-
   }
 }
 

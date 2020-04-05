@@ -3,9 +3,10 @@ import 'package:scoped_model/scoped_model.dart';
 
 //my
 import '../scoped_models/main_model.dart';
+import '../models/auth.dart';
 //import 'package:academia1/pages/products_page.dart';
 
-enum AuthMode { SignUp, Login }
+
 
 class AuthPage extends StatefulWidget {
   @override
@@ -121,19 +122,16 @@ class _AuthPage extends State<AuthPage> {
 //=================================Functions====================================
 //  ============================================================================
 
-  void _submitForm(Function login, Function signup) async {
+  void _submitForm(Function authenticate) async {
     if (!_formKey.currentState.validate() || !_formData['acceptTerms']) {
       return;
     }
     _formKey.currentState.save();
     Map<String, dynamic> succesInformation;
-    if (_authMode == AuthMode.Login) {
+
       succesInformation =
-          await login(_formData['email'], _formData['password']);
-    } else {
-      succesInformation =
-          await signup(_formData['email'], _formData['password']);
-    }
+          await authenticate(_formData['email'], _formData['password'], _authMode);
+
 
     if (succesInformation['sucess']) {
       Navigator.pushReplacementNamed(context, '/admin');
@@ -178,7 +176,7 @@ class _AuthPage extends State<AuthPage> {
                     height: 10.0,
                   ),
                   passwordWidget(),
-                  _authMode == AuthMode.SignUp
+                  _authMode == AuthMode.Signup
                       ? _passwordConfirmWidget()
                       : Container(),
                   SizedBox(
@@ -191,7 +189,7 @@ class _AuthPage extends State<AuthPage> {
                     onPressed: () {
                       setState(() {
                         _authMode = _authMode == AuthMode.Login
-                            ? AuthMode.SignUp
+                            ? AuthMode.Signup
                             : AuthMode.Login;
                       });
                     },
@@ -209,7 +207,7 @@ class _AuthPage extends State<AuthPage> {
                                   ? 'Login'
                                   : 'Signup'),
                               onPressed: () =>
-                                  _submitForm(model.login, model.signup),
+                                  _submitForm(model.Authenticate),
                             );
                     },
                   ),

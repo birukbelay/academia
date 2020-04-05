@@ -26,62 +26,70 @@ class MyApp extends StatefulWidget {
   }
 }
 
-
 class _MyAppState extends State<MyApp> {
+  final MainModel _model = MainModel();
+
+  @override
+  void initState() {
+    _model.autoAuthenticate();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final MainModel model =MainModel();
     return ScopedModel<MainModel>(
-      model:model,/*  */
+      model: _model,
+      /*  */
       child: MaterialApp(
-      title: 'Flutter Demo',
+        title: 'Flutter Demo',
 
 //      ==================  Theme ---------------------
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        accentColor: Colors.deepOrange,
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+          accentColor: Colors.deepOrange,
 //          brightness: Brightness.dark,
-      ),
+        ),
 //        home: AuthPage(),
 
 //    ============================Routes --------------
-      routes: {
-        '/': (BuildContext context) =>
-            ProductsPage(model),
-        '/admin': (BuildContext context) =>
-            AdminPage(model),
-        '/auth': (BuildContext context) => AuthPage(),
-      },
+        routes: {
+          '/': (BuildContext context) => ProductsPage(_model),
+          '/admin': (BuildContext context) => AdminPage(_model),
+          '/auth': (BuildContext context) => ScopedModelDescendant(
+                builder: (context, child, model) {
+                  return model.user == null ? AuthPage() : ProductsPage(_model);
+                },
+              ),
+        },
 
 //      ======================  on generate Routes ------------
-      onGenerateRoute: (RouteSettings settings) {
-        final List<String> pathElements = settings.name.split('/');
-        if (pathElements[0] != '') {
-          return null;
-
-        }
-        if (pathElements[1] == 'product') {
+        onGenerateRoute: (RouteSettings settings) {
+          final List<String> pathElements = settings.name.split('/');
+          if (pathElements[0] != '') {
+            return null;
+          }
+          if (pathElements[1] == 'product') {
 //          final String productId = pathElements[2];
-          final Product product = model.allProducts.firstWhere((Product product){
-            return product.id ==product.id;
-          });
+            final Product product =
+                _model.allProducts.firstWhere((Product product) {
+              return product.id == product.id;
+            });
 //          model.selectProduct(productId);
-          return MaterialPageRoute<bool>(
-            builder: (BuildContext context) => ProductPage(product),
-          );
-        }
-        return null;
-      },
+            return MaterialPageRoute<bool>(
+              builder: (BuildContext context) => ProductPage(product),
+            );
+          }
+          return null;
+        },
 
 //      ================  =============  On unknown Route
 
-      onUnknownRoute: (RouteSettings settings) {
-        return MaterialPageRoute(
-          builder: (BuildContext context) =>
-              ProductsPage(model),
-        );
-      },
-    ),);
+        onUnknownRoute: (RouteSettings settings) {
+          return MaterialPageRoute(
+            builder: (BuildContext context) => ProductsPage(_model),
+          );
+        },
+      ),
+    );
   }
 }
