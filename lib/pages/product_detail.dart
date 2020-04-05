@@ -6,12 +6,12 @@ import 'package:flutter/material.dart';
 import '../widgets/ui_element/title.dart';
 import '../models/product.dart';
 
-class ProductPage extends StatelessWidget {
+class ProductDetailPage extends StatelessWidget {
   final Product product;
 
   final bool fav = false;
 
-  ProductPage(this.product);
+  ProductDetailPage(this.product);
 
   Widget _appbar(BuildContext context, String title) {
     return AppBar(

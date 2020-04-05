@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:rxdart/subjects.dart';
 
 //
 import '../models/user.dart';
@@ -11,6 +12,7 @@ import '../models/auth.dart';
 
 class ConnectedProducts extends Model {
   List<Product> _products = [];
+  List<Product> _myProducts = [];
   User _authenticatedUser;
   String _selProductId;
   bool _isLoading = false;
@@ -29,6 +31,10 @@ mixin ProductsModel on ConnectedProducts {
 
   List<Product> get allProducts {
     return List.from(_products);
+  }
+
+  List<Product> get myProducts {
+    return List.from(_myProducts);
   }
 
   List<Product> get displayedFavoriteProducts {
@@ -65,7 +71,8 @@ mixin ProductsModel on ConnectedProducts {
     return _showFavorites;
   }
 
-  // -------------------=========1 fetchProducts ========--------------
+  // -------------------========= 1 fetchProducts ========--------------
+
   Future<Null> fetchProducts() {
     _isLoading = true;
     notifyListeners();
@@ -91,7 +98,13 @@ mixin ProductsModel on ConnectedProducts {
             image: productData['image'],
             price: productData['price'],
             userEmail: productData['userEmail'],
-            userId: productData['userId']);
+            userId: productData['userId'],
+//            TODO may be to compare this field to the one i the users fav list
+            isFavorite: productData['wishlistUsers'] == null
+                ? false
+                : (productData['wishlistUsers'] as Map<String, dynamic>)
+                .containsKey(_authenticatedUser.id)
+        );
         fetchedProductsList.add(product);
       });
 
@@ -108,10 +121,72 @@ mixin ProductsModel on ConnectedProducts {
     });
   } //fetch products
 
-  //  =--------------------=========   add product ==------------------------=
 
-  Future<bool> addProduct(
-      String title, String image, double price, String description) async {
+
+
+  // -------------------========= 2 fetchMyProducts ========--------------
+
+  Future<Null> fetchMyProducts() {
+    _isLoading = true;
+    notifyListeners();
+
+    return http
+//    TODO make a function that fetches the users only products
+        .get(_productUrl + '.json?auth=${_authenticatedUser.token}')
+        .then<Null>((http.Response response) {
+      print(response.body);
+      final List<Product> fetchedProductsList = [];
+      final Map<String, dynamic> productListData = json.decode(response.body);
+
+      if (productListData == null) {
+        _isLoading = false;
+        notifyListeners();
+        return;
+      }
+
+      productListData.forEach((String productId, dynamic productData) {
+        final Product product = Product(
+            id: productId,
+            title: productData['title'],
+            description: productData['description'],
+            image: productData['image'],
+            price: productData['price'],
+            userEmail: productData['userEmail'],
+            userId: productData['userId'],
+//            TODO may be to compare this field to the one i the users fav list
+            isFavorite: productData['wishlistUsers'] == null
+                ? false
+                : (productData['wishlistUsers'] as Map<String, dynamic>)
+                .containsKey(_authenticatedUser.id)
+        );
+        fetchedProductsList.add(product);
+      });
+
+      _products = fetchedProductsList;
+      _isLoading = false;
+      notifyListeners();
+      _selProductId = null;
+    }).catchError((e) {
+      _isLoading = false;
+      notifyListeners();
+      _selProductId = null;
+      print("error...: $e");
+      return false;
+    });
+  } //fetch products
+
+
+
+
+
+
+
+
+
+  //  =--------------------=========   2 add product ==------------------------=
+
+  Future<bool> addProduct(String title, String image, double price,
+      String description) async {
     _isLoading = true;
     notifyListeners();
 
@@ -159,10 +234,10 @@ mixin ProductsModel on ConnectedProducts {
     }
   }
 
-//  ---------------------====2 updateProduct ====---------------------
+//  ---------------------==== 3 updateProduct ====---------------------
 
-  Future<bool> updateProduct(
-      String title, String image, double price, String description) {
+  Future<bool> updateProduct(String title, String image, double price,
+      String description) {
     _isLoading = true;
     notifyListeners();
 
@@ -177,9 +252,9 @@ mixin ProductsModel on ConnectedProducts {
 
     return http
         .put(
-            _productUrl +
-                '/${selectedProduct.id}.json?auth=${_authenticatedUser.token}',
-            body: json.encode(updateData))
+        _productUrl +
+            '/${selectedProduct.id}.json?auth=${_authenticatedUser.token}',
+        body: json.encode(updateData))
         .then((http.Response response) {
       _isLoading = false;
 
@@ -204,14 +279,14 @@ mixin ProductsModel on ConnectedProducts {
     });
   }
 
-//--------------------===3  delete product ======-----------
+//--------------------=== 4  delete product ======-----------
   Future<bool> deleteProduct() {
     _isLoading = true;
     final deletedId = selectedProduct.id;
     _products.removeAt(selectedProductIndex);
     return http
         .delete(
-            _productUrl + '/$deletedId.json?auth=${_authenticatedUser.token}')
+        _productUrl + '/$deletedId.json?auth=${_authenticatedUser.token}')
         .then((http.Response response) {
       _products.removeAt(selectedProductIndex);
       _isLoading = false;
@@ -227,12 +302,15 @@ mixin ProductsModel on ConnectedProducts {
     });
   }
 
-//  ---------------  =======4 favToggle =====--------
+//  ---------------  ======= 5 favToggle =====--------
 
-  void toggleFavorite() {
+  void toggleFavorite() async {
+    String favUrl = '$_productUrl/${selectedProduct
+        .id}/wishlistUsers/${_authenticatedUser
+        .id}.json?auth=${_authenticatedUser.token}';
+
     final bool isCurrentlyFavorite = selectedProduct.isFavorite;
     final bool newFavStatus = !isCurrentlyFavorite;
-
     final Product updatedProduct = Product(
       id: selectedProduct.id,
       title: selectedProduct.title,
@@ -246,6 +324,31 @@ mixin ProductsModel on ConnectedProducts {
     _products[selectedProductIndex] = updatedProduct;
 //    _selProductIndex = null;
     notifyListeners();
+
+//    TODO putting to the users own favorite list && search for which is a better design
+    http.Response response;
+    if (newFavStatus) {
+      response = await http.put(favUrl, body: json.encode(true));
+    } else {
+      response = await http.delete(favUrl);
+    }
+
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      final Product updatedProduct = Product(
+        id: selectedProduct.id,
+        title: selectedProduct.title,
+        description: selectedProduct.description,
+        image: selectedProduct.image,
+        userId: selectedProduct.userId,
+        userEmail: selectedProduct.userEmail,
+        price: selectedProduct.price,
+        isFavorite: !newFavStatus,
+      );
+      _products[selectedProductIndex] = updatedProduct;
+//    _selProductIndex = null;
+      notifyListeners();
+    }
   }
 
   void toggleDisplayFavorites() {
@@ -257,10 +360,19 @@ mixin ProductsModel on ConnectedProducts {
 //#####===========================  user model mixin ======================
 
 mixin UserModel on ConnectedProducts {
-
   Timer _authTimer;
+  PublishSubject<bool> _userSubject = PublishSubject();
+
   User get user {
     return _authenticatedUser;
+  }
+
+  bool get isAuthenticated {
+    return _isauthenticated;
+  }
+
+  PublishSubject<bool> get userSubect {
+    return _userSubject;
   }
 
 //  ----------------===== Authenticate ========----------
@@ -301,9 +413,11 @@ mixin UserModel on ConnectedProducts {
 
 //      TODO  EXPIRESIN IS A RESPONSE FROM THE FIRE
       setAuthTimeout(int.parse(responseData['expiresIn']));
+      _userSubject.add(true);
 
       final DateTime now = DateTime.now();
-      final DateTime expiryTime = now.add(Duration(seconds: int.parse(responseData['expiresIn'])));
+      final DateTime expiryTime =
+      now.add(Duration(seconds: int.parse(responseData['expiresIn'])));
 
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setString('token', responseData['idToken']);
@@ -328,6 +442,8 @@ mixin UserModel on ConnectedProducts {
     return {'sucess': !hasError, 'message': message};
   }
 
+//  =========== ---------- autho authenticate --------- =======
+
   void autoAuthenticate() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String token = prefs.getString('token');
@@ -335,34 +451,40 @@ mixin UserModel on ConnectedProducts {
     final parsedExpiryTime = DateTime.parse(expiryTime);
     if (token != null) {
       final DateTime now = DateTime.parse(expiryTime);
-      if (parsedExpiryTime.isBefore(now)){
-        _authenticatedUser=null;
+      if (parsedExpiryTime.isBefore(now)) {
+        _authenticatedUser = null;
         notifyListeners();
         return;
       }
       final String email = prefs.getString('email');
       final String userId = prefs.getString('userId');
-      final int tokenLifespan = parsedExpiryTime.difference(now).inSeconds;
+      final int tokenLifespan = parsedExpiryTime
+          .difference(now)
+          .inSeconds;
+      _userSubject.add(true);
+
       setAuthTimeout(tokenLifespan);
       _authenticatedUser = User(id: userId, email: email, token: token);
       notifyListeners();
     }
   }
 
-  void logout() async{
-    _authenticatedUser =null;
+  void logout() async {
+    _authenticatedUser = null;
     _authTimer.cancel();
+    //    this emmiting an event
+    _userSubject.add(false);
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.remove('token');
     prefs.remove('email');
     prefs.remove('userId');
   }
-  void setAuthTimeout(int time){
-    _authTimer=Timer(Duration(seconds:time),  logout);
-  }
 
-  bool get isAuthenticated {
-    return _isauthenticated;
+  void setAuthTimeout(int time) {
+    _authTimer = Timer(Duration(seconds: time), logout);
+
+    //    this emmiting an event
+    _userSubject.add(false);
   }
 }
 

@@ -38,7 +38,7 @@ class _ProductViewPageState extends State<ProductViewPage>{
     return  IconButton(
         icon: Icon(Icons.edit),
         onPressed: () {
-          model.selectProduct(model.allProducts[index].id);
+          model.selectProduct(model.myProducts[index].id);
           Navigator.of(context)
               .push(MaterialPageRoute(builder: (BuildContext context) {
             return ProductEditPage();
@@ -68,7 +68,7 @@ class _ProductViewPageState extends State<ProductViewPage>{
                 child: Text('Delete'),
                 onPressed: () {
                   Navigator.pop(context);
-                  model.selectProduct(model.allProducts[index].id);
+                  model.selectProduct(model.myProducts[index].id);
                   model.deleteProduct();
 
 //                  Navigator.pop(context, true);
@@ -82,7 +82,7 @@ class _ProductViewPageState extends State<ProductViewPage>{
 //  ==============---------   Widget _listProduct ----------============
   Widget _listProduct(context, index, model) {
     return Dismissible(
-      key: Key(model.allProducts[index].title),
+      key: Key(model.myProducts[index].title),
       background: Container(
         color: Colors.red,
       ),
@@ -98,10 +98,10 @@ class _ProductViewPageState extends State<ProductViewPage>{
         children: <Widget>[
           ListTile(
             leading: CircleAvatar(
-              backgroundImage: AssetImage(model.allProducts[index].image),
+              backgroundImage: AssetImage(model.myProducts[index].image),
             ),
-            title: Text(model.allProducts[index].title),
-            subtitle: Text('\$${model.allProducts[index].price}'),
+            title: Text(model.myProducts[index].title),
+            subtitle: Text('\$${model.myProducts[index].price}'),
             trailing: _editButton(context, index, model),
           ),
           Divider()
@@ -118,7 +118,7 @@ class _ProductViewPageState extends State<ProductViewPage>{
       return  ListView.builder(
         itemBuilder: (BuildContext context, int index) =>
             _listProduct(context, index, model),
-        itemCount: model.allProducts.length,
+        itemCount: model.myProducts.length,
       );
     },);
 

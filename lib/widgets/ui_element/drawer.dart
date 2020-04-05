@@ -42,7 +42,7 @@ class DrawerUi extends StatelessWidget {
                   title: Text('Logout'),
                   onTap: () {
                     model.logout();
-                    Navigator.pushReplacementNamed(context, '/');
+                    
 
                   },
                 )
