@@ -9,6 +9,7 @@ import '../../widgets/product/adress_tag.dart';
 import '../../scoped_models/main_model.dart';
 
 class ProductCard extends StatelessWidget {
+
   final Product product;
   final int productIndex;
 

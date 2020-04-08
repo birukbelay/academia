@@ -5,6 +5,8 @@ import 'package:scoped_model/scoped_model.dart';
 import '../../models/product.dart';
 import '../../scoped_models/main_model.dart';
 import '../../widgets/helpers/ensure_visible.dart';
+import '../../widgets/form_inputs/image.dart';
+//import '../../widgets/form_inputs/location.dart';
 
 class ProductEditPage extends StatefulWidget {
   @override
@@ -50,7 +52,6 @@ class _ProductsEditPage extends State<ProductEditPage> {
     );
   }
 
-//  ============================  build image  ==========================
 
 //  ========================================  Build Price =================
 
@@ -141,8 +142,16 @@ class _ProductsEditPage extends State<ProductEditPage> {
             padding: EdgeInsets.symmetric(horizontal: targetPadding),
             children: <Widget>[
               _buildTitle(product),
+              SizedBox(height: 10.0,),
               _buildPrice(product),
               _buildDescription(product),
+              SizedBox(height: 10.0,),
+              ImageInput(),
+              SizedBox(height: 10.0,),
+
+//              LocationInput(),
+              SizedBox(height: 10.0,),
+
               _buildSubmitButton(),
             ],
           ),

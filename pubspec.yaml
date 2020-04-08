@@ -32,6 +32,9 @@ dependencies:
   mime: ^0.9.6+3
   url_launcher: ^5.4.2
   location: ^3.0.1
+#  map_view:
+#    git:
+#      url: git://github.com/maxschwarzmueller/flutter_google_map_view
 
 
 dev_dependencies:

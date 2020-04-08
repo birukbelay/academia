@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
+//import 'package:map_view/map_view.dart';
 
 //import 'package:flutter/rendering.dart';
 // my import
@@ -15,6 +16,7 @@ void main() {
 //  debugPaintSizeEnabled = true;
 //  debugPaintBaselinesEnabled =true;
 //  debugPaintPointersEnabled = true;
+//MapView.setApiKey('AIzaSyA9kB2jWY0qBS726IxFFNheV0ylqZs-Tiw');
   runApp(MyApp());
 }
 
@@ -60,8 +62,8 @@ class _MyAppState extends State<MyApp> {
 //    ============================Routes --------------
         routes: {
           '/': (BuildContext context) => ProductsPage(_model),
-          '/admin': (BuildContext context) =>_isAuthenticated? AuthPage() : AdminPage(_model),
-          '/auth': (BuildContext context) => _isAuthenticated? AuthPage() : ProductsPage(_model),
+          '/admin': (BuildContext context) =>_isAuthenticated? AdminPage(_model):AuthPage() ,
+          '/auth': (BuildContext context) => _isAuthenticated? ProductsPage(_model) :AuthPage()  ,
 
         },
 

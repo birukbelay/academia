@@ -21,7 +21,7 @@ class ProductViewPage extends StatefulWidget {
 class _ProductViewPageState extends State<ProductViewPage>{
   @override
   initState(){
-    widget.model.fetchProducts();
+    widget.model.fetchMyProducts();
     super.initState();
 
   }
@@ -98,7 +98,7 @@ class _ProductViewPageState extends State<ProductViewPage>{
         children: <Widget>[
           ListTile(
             leading: CircleAvatar(
-              backgroundImage: AssetImage(model.myProducts[index].image),
+              backgroundImage: NetworkImage(model.myProducts[index].image),
             ),
             title: Text(model.myProducts[index].title),
             subtitle: Text('\$${model.myProducts[index].price}'),

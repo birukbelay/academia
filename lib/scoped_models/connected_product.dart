@@ -16,12 +16,20 @@ class ConnectedProducts extends Model {
   User _authenticatedUser;
   String _selProductId;
   bool _isLoading = false;
-  bool _isauthenticated = false;
+  bool _isAuthenticated = false;
 
+//  Links for web
+
+  //FIXME i dont know making these have a problem
   static String _dbUrl = 'https://academia-4afa1.firebaseio.com/';
-  String _productUrl = _dbUrl + 'products';
+  String _productUrl = _dbUrl + '/products';
+  static String apiKey="AIzaSyC00tSqK0IIKP6WtDVssHa_X3g0XfrSfwQ";
+  String  signupAuthUrl = 'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=$apiKey';
+  String signinAuthUrl = 'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=$apiKey';
+  var mapApiKey ="AIzaSyA9kB2jWY0qBS726IxFFNheV0ylqZs-Tiw";
+
   String staticImage =
-      'https://m.media-amazon.com/images/S/aplus-media/vc/7ee7f4e8-31f9-475e-b2b4-dbf30c1f0f11._CR189,0,1814,1814_PT0_SX300__.jpg';
+       'https://m.media-amazon.com/images/S/aplus-media/vc/7ee7f4e8-31f9-475e-b2b4-dbf30c1f0f11._CR189,0,1814,1814_PT0_SX300__.jpg';
 }
 
 //######================== product model mixin ==================
@@ -78,7 +86,7 @@ mixin ProductsModel on ConnectedProducts {
     notifyListeners();
 
     return http
-        .get(_productUrl + '.json?auth=${_authenticatedUser.token}')
+        .get(_productUrl + '.json')
         .then<Null>((http.Response response) {
       print(response.body);
       final List<Product> fetchedProductsList = [];
@@ -99,7 +107,7 @@ mixin ProductsModel on ConnectedProducts {
             price: productData['price'],
             userEmail: productData['userEmail'],
             userId: productData['userId'],
-//            TODO may be to compare this field to the one i the users fav list
+//            TODO may be to compare this field to the one in the users fav list
             isFavorite: productData['wishlistUsers'] == null
                 ? false
                 : (productData['wishlistUsers'] as Map<String, dynamic>)
@@ -132,7 +140,7 @@ mixin ProductsModel on ConnectedProducts {
 
     return http
 //    TODO make a function that fetches the users only products
-        .get(_productUrl + '.json?auth=${_authenticatedUser.token}')
+        .get(_productUrl + '.json')
         .then<Null>((http.Response response) {
       print(response.body);
       final List<Product> fetchedProductsList = [];
@@ -162,7 +170,7 @@ mixin ProductsModel on ConnectedProducts {
         fetchedProductsList.add(product);
       });
 
-      _products = fetchedProductsList;
+      _myProducts = fetchedProductsList;
       _isLoading = false;
       notifyListeners();
       _selProductId = null;
@@ -170,7 +178,7 @@ mixin ProductsModel on ConnectedProducts {
       _isLoading = false;
       notifyListeners();
       _selProductId = null;
-      print("error...: $e");
+      print("#####error...: $e");
       return false;
     });
   } //fetch products
@@ -183,7 +191,7 @@ mixin ProductsModel on ConnectedProducts {
 
 
 
-  //  =--------------------=========   2 add product ==------------------------=
+  //  =--------------------=========   3 add product ==------------------------=
 
   Future<bool> addProduct(String title, String image, double price,
       String description) async {
@@ -222,6 +230,7 @@ mixin ProductsModel on ConnectedProducts {
           userId: _authenticatedUser.id);
 
       _products.add(newProduct);
+      _myProducts.add(newProduct);
       _selProductId = null;
       _isLoading = false;
       notifyListeners();
@@ -234,7 +243,7 @@ mixin ProductsModel on ConnectedProducts {
     }
   }
 
-//  ---------------------==== 3 updateProduct ====---------------------
+//  ---------------------==== 4 updateProduct ====---------------------
 
   Future<bool> updateProduct(String title, String image, double price,
       String description) {
@@ -279,7 +288,7 @@ mixin ProductsModel on ConnectedProducts {
     });
   }
 
-//--------------------=== 4  delete product ======-----------
+//--------------------=== 5  delete product ======-----------
   Future<bool> deleteProduct() {
     _isLoading = true;
     final deletedId = selectedProduct.id;
@@ -302,7 +311,7 @@ mixin ProductsModel on ConnectedProducts {
     });
   }
 
-//  ---------------  ======= 5 favToggle =====--------
+//  ---------------  ======= 6 favToggle =====--------
 
   void toggleFavorite() async {
     String favUrl = '$_productUrl/${selectedProduct
@@ -368,7 +377,7 @@ mixin UserModel on ConnectedProducts {
   }
 
   bool get isAuthenticated {
-    return _isauthenticated;
+    return _isAuthenticated;
   }
 
   PublishSubject<bool> get userSubect {
@@ -389,18 +398,21 @@ mixin UserModel on ConnectedProducts {
 
     http.Response response;
     if (mode == AuthMode.Login) {
+
       //TODO | Auth  backend needs to be set up
       //TODO | u must handle the response from the database
-      response = await http.post('https:the uri?key=kldkflkjkj',
+
+      response = await http.post( signinAuthUrl,
           body: json.encode(authData),
           headers: {'Content-type': 'application/json'});
     } else {
-      response = await http.post('https:my url with secure api',
+      response = await http.post(signupAuthUrl,
           body: json.encode(authData),
           headers: {'Content-Type': 'application/json'});
     }
-
+//---------------  responseData  is parsed from response
     final Map<String, dynamic> responseData = json.decode(response.body);
+
     bool hasError = true;
     String message = 'something went wrong';
     if (responseData.containsKey('idToken')) {
@@ -424,7 +436,8 @@ mixin UserModel on ConnectedProducts {
       prefs.setString('email', email);
       prefs.setString('userId', responseData['localId']);
       prefs.setString('expiryTime', expiryTime.toIso8601String());
-      _isauthenticated = true;
+
+      _isAuthenticated = true;
     } else if (responseData['error']['message'] == 'EMAIL_NOT_FOUND') {
       message = 'EMAIL OR PASSWORD WRONG';
     } else if (responseData['error']['message'] == 'INVALID_PASSWORD') {
@@ -445,10 +458,13 @@ mixin UserModel on ConnectedProducts {
 //  =========== ---------- autho authenticate --------- =======
 
   void autoAuthenticate() async {
+
+//    getting the token from SharedPreferences and parsing the time
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String token = prefs.getString('token');
     final String expiryTime = prefs.getString('expiryTime');
     final parsedExpiryTime = DateTime.parse(expiryTime);
+
     if (token != null) {
       final DateTime now = DateTime.parse(expiryTime);
       if (parsedExpiryTime.isBefore(now)) {
