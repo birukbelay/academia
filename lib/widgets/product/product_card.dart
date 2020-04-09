@@ -70,11 +70,15 @@ class ProductCard extends StatelessWidget {
       child: Column(
         children: [
 //                ========Image==========
-          FadeInImage(
-            image: NetworkImage(product.image),
-            height: 300.0,
-            fit: BoxFit.cover,
-            placeholder: AssetImage('assets/images/food/9.jpg'),
+//        @Animation -> hero
+          Hero(
+            tag: product.id,
+            child: FadeInImage(
+              image: NetworkImage(product.image),
+              height: 300.0,
+              fit: BoxFit.cover,
+              placeholder: AssetImage('assets/images/food/9.jpg'),
+            ),
           ),
 //                =============Title price Widget ============
           _buildTitlePriceRow(),

@@ -6,8 +6,6 @@ import '../scoped_models/main_model.dart';
 import '../models/auth.dart';
 //import 'package:academia1/pages/products_page.dart';
 
-
-
 class AuthPage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -15,7 +13,7 @@ class AuthPage extends StatefulWidget {
   }
 }
 
-class _AuthPage extends State<AuthPage> {
+class _AuthPage extends State<AuthPage> with TickerProviderStateMixin {
   final Map<String, dynamic> _formData = {
     'email': null,
     'password': null,
@@ -26,6 +24,24 @@ class _AuthPage extends State<AuthPage> {
   final TextEditingController _passwordTextController = TextEditingController();
   AuthMode _authMode = AuthMode.Login;
 
+  // @Animation 1.1 -->declare  the animation
+  AnimationController _controller;
+  Animation<Offset> _slideAnimation;
+
+  @override
+  initState() {
+//    @Animation 2 --> controller 2
+    _controller =
+        AnimationController(vsync: this, duration: Duration(milliseconds: 300));
+//    @Animation 2.2 --> defining what the slideAnimation is
+//    @Animation Define  --> the curve animation only animate b/n 1& 0 exept when called by animmate in a detailed configration by tween
+//    Tween animation will allow us to controll which values we can animate between
+    _slideAnimation =
+        Tween<Offset>(begin: Offset(0.0, -2.0), end: Offset(0.0, 0.0)).animate(
+            CurvedAnimation(parent: _controller, curve: Curves.fastOutSlowIn));
+    super.initState();
+  }
+
 //  ================================Widgets=====================================
 //==============================================================================
 
@@ -34,7 +50,7 @@ class _AuthPage extends State<AuthPage> {
     return DecorationImage(
         fit: BoxFit.cover,
         colorFilter:
-            ColorFilter.mode(Colors.black.withOpacity(0.3), BlendMode.dstATop),
+        ColorFilter.mode(Colors.black.withOpacity(0.3), BlendMode.dstATop),
         image: AssetImage('assets/images/food/9.jpg'));
   }
 
@@ -46,7 +62,8 @@ class _AuthPage extends State<AuthPage> {
       keyboardType: TextInputType.emailAddress,
       validator: (String value) {
         if (value.isEmpty ||
-            !RegExp(r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")
+            !RegExp(
+                r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")
                 .hasMatch(value)) {
           return 'Please enter a valid email';
         }
@@ -81,21 +98,30 @@ class _AuthPage extends State<AuthPage> {
 //    =============== password confirm ==========
 
   Widget _passwordConfirmWidget() {
-    return TextFormField(
-      decoration: InputDecoration(
-          labelText: 'conferm  Password',
-          filled: true,
-          fillColor: Colors.white12),
-      obscureText: true,
-      validator: (String value) {
-        if (_passwordTextController.text != value) {
-          return 'Password do not match';
-        }
-        return null;
-      },
-      onSaved: (String value) {
-        _formData['password'] = value;
-      },
+//    @Animation 3 -- transition --with curved animation
+    return FadeTransition(
+      opacity: CurvedAnimation(parent: _controller, curve: Curves.easeIn),
+//      @Animation 3.2 --> it refers to the slide in animation
+      child: SlideTransition(
+
+        position:_slideAnimation,
+        child: TextFormField(
+          decoration: InputDecoration(
+              labelText: 'conferm  Password',
+              filled: true,
+              fillColor: Colors.white12),
+          obscureText: true,
+          validator: (String value) {
+            if (_passwordTextController.text != value) {
+              return 'Password do not match';
+            }
+            return null;
+          },
+          onSaved: (String value) {
+            _formData['password'] = value;
+          },
+        ),
+      ),
     );
   }
 
@@ -129,9 +155,8 @@ class _AuthPage extends State<AuthPage> {
     _formKey.currentState.save();
     Map<String, dynamic> succesInformation;
 
-      succesInformation =
-          await authenticate(_formData['email'], _formData['password'], _authMode);
-
+    succesInformation = await authenticate(
+        _formData['email'], _formData['password'], _authMode);
 
     if (succesInformation['sucess']) {
       Navigator.pushReplacementNamed(context, '/admin');
@@ -166,6 +191,7 @@ class _AuthPage extends State<AuthPage> {
             image: decorationImageWidget()),
         padding: EdgeInsets.all(10.0),
         child: Center(
+//          so that when writing in the input field it would scroll up to the top
           child: SingleChildScrollView(
             child: Form(
               key: _formKey,
@@ -176,39 +202,49 @@ class _AuthPage extends State<AuthPage> {
                     height: 10.0,
                   ),
                   passwordWidget(),
-                  _authMode == AuthMode.Signup
-                      ? _passwordConfirmWidget()
-                      : Container(),
+
+                  _passwordConfirmWidget(),
+
                   SizedBox(
                     height: 10.0,
                   ),
                   _buildAcceptSwitch(),
-                  FlatButton(
-                    child: Text(
-                        'switch to ${_authMode == AuthMode.Login ? 'Signup' : "Login"}'),
-                    onPressed: () {
-                      setState(() {
-                        _authMode = _authMode == AuthMode.Login
-                            ? AuthMode.Signup
-                            : AuthMode.Login;
-                      });
-                    },
-                  ),
                   SizedBox(
                     height: 10.0,
                   ),
                   ScopedModelDescendant<MainModel>(
                     builder:
                         (BuildContext context, Widget child, MainModel model) {
+//                      @CircularProgressIndicator while it is waiting to login
                       return model.isLoading
                           ? CircularProgressIndicator()
                           : RaisedButton(
-                              child: Text(_authMode == AuthMode.Login
-                                  ? 'Login'
-                                  : 'Signup'),
-                              onPressed: () =>
-                                  _submitForm(model.Authenticate),
-                            );
+                        child: Text(_authMode == AuthMode.Login
+                            ? 'Login'
+                            : 'Signup'),
+                        onPressed: () => _submitForm(model.Authenticate),
+                      );
+                    },
+                  ),
+                  FlatButton(
+                    child: Text(
+                        'switch to ${_authMode == AuthMode.Login
+                            ? 'Signup'
+                            : "Login"}'),
+                    onPressed: () {
+                      if (_authMode == AuthMode.Login) {
+                        setState(() {
+                          _authMode = AuthMode.Signup;
+                        });
+//                          @Animation 4-1 -> type of animation
+                        _controller.forward();
+                      } else {
+                        setState(() {
+                          _authMode = AuthMode.Login;
+                        });
+//                          @Animation 4-2 -> type of animation
+                        _controller.reverse();
+                      }
                     },
                   ),
                 ],

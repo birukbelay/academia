@@ -65,11 +65,15 @@ class ProductDetailPage extends StatelessWidget {
         body: Center(
           child: Column(
             children: <Widget>[
-              FadeInImage(
-                image: NetworkImage(product.image),
-                height: 300.0,
-                fit: BoxFit.cover,
-                placeholder: AssetImage('assets/images/food/9.jpg'),
+//              @Animation -->hero
+              Hero(
+                tag: product.id,
+                child: FadeInImage(
+                  image: NetworkImage(product.image),
+                  height: 300.0,
+                  fit: BoxFit.cover,
+                  placeholder: AssetImage('assets/images/food/9.jpg'),
+                ),
               ),
 //
               Container(
