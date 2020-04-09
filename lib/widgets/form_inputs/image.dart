@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+// my ...
+import '../../models/product.dart';
 
 class ImageInput extends StatefulWidget {
+  final Function setImage;
+  final Product product;
+
+  ImageInput(this.setImage, this.product);
   @override
   _ImageInputState createState() => _ImageInputState();
 }
@@ -10,11 +16,13 @@ class ImageInput extends StatefulWidget {
 class _ImageInputState extends State<ImageInput> {
   File _imageFile;
 
+
   void _getImage(BuildContext context, ImageSource source) {
     ImagePicker.pickImage(source: source, maxWidth: 400.0).then((File image) {
       setState(() {
         _imageFile = image;
       });
+      widget.setImage(image);
       Navigator.pop(context);
     });
   }
@@ -56,6 +64,24 @@ class _ImageInputState extends State<ImageInput> {
   @override
   Widget build(BuildContext context) {
     final buttonAccent = Theme.of(context).accentColor;
+    Widget previewImage= Text('please sellect an image');
+    if(_imageFile!= null){
+      previewImage= Image.file(
+        _imageFile,
+        fit: BoxFit.cover,
+        height: 300,
+        width: MediaQuery.of(context).size.width,
+        alignment: Alignment.topCenter,
+      );
+    }else if(widget.product!=null){
+      previewImage= Image.network(
+        widget.product.image,
+        fit: BoxFit.cover,
+        height: 300,
+        width: MediaQuery.of(context).size.width,
+        alignment: Alignment.topCenter,
+      );
+    }
     return Column(
       children: <Widget>[
         OutlineButton(
@@ -84,15 +110,7 @@ class _ImageInputState extends State<ImageInput> {
         SizedBox(
           height: 10.0,
         ),
-        _imageFile == null
-            ? Text('pick an image')
-            : Image.file(
-                _imageFile,
-                fit: BoxFit.cover,
-                height: 300,
-                width: MediaQuery.of(context).size.width,
-                alignment: Alignment.topCenter,
-              ),
+        previewImage,
       ],
     );
   }

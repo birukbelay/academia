@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
+import 'dart:io';
 
 //my
 import '../../models/product.dart';
@@ -20,7 +21,7 @@ class _ProductsEditPage extends State<ProductEditPage> {
   final Map<String, dynamic> _formData = {
     'title': '',
     'description': '',
-    'image': 'assets/images/food/9.jpg',
+    'image': null,
     'price': null,
   };
 
@@ -146,7 +147,7 @@ class _ProductsEditPage extends State<ProductEditPage> {
               _buildPrice(product),
               _buildDescription(product),
               SizedBox(height: 10.0,),
-              ImageInput(),
+              ImageInput(_setImage, product),
               SizedBox(height: 10.0,),
 
 //              LocationInput(),
@@ -160,11 +161,17 @@ class _ProductsEditPage extends State<ProductEditPage> {
     );
   }
 
+
+  void _setImage(File image){
+    _formData['image']= image;
+  }
+
 //  ======================= Function Edit item =========================
 
   void _submitForm(Function addProduct, Function updateProduct, selectProduct,
       [int selectedProductIndex]) {
-    if (!_formKey.currentState.validate()) {
+
+    if (!_formKey.currentState.validate() || (_formData['image']==null && selectedProductIndex == -1) ){
       return;
     }
     _formKey.currentState.save();
