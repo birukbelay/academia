@@ -86,9 +86,12 @@ mixin ProductsModel on ConnectedProducts {
   }
 
   // -------------------========= 1 fetchProducts ========--------------
-
-  Future<Null> fetchProducts() {
+//we set clear existing to true if we are calling this function in the my products page
+  Future<Null> fetchProducts({clearExisting = false}) {
     _isLoading = true;
+    if (clearExisting){
+      _products=[];
+    }
     notifyListeners();
 
     return http.get(_productUrl + '.json').then<Null>((http.Response response) {

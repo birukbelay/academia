@@ -82,8 +82,9 @@ class _ProductsEditPage extends State<ProductEditPage> {
         obscureText: false,
 //        initialValue: product == null ? '' : product.price.toString(),
         validator: (String value) {
+//          this regExp accepts both comma and decimal as a valure
           if (value.isEmpty ||
-              !RegExp(r'^(?:[1-9]\d*|0)?(?:\.\d+)?$').hasMatch(value)) {
+              !RegExp(r'^(?:[1-9]\d*|0)?(?:[.,]d+)?$').hasMatch(value)) {
             return 'this value is a number and required';
           }
           return null;
@@ -189,7 +190,22 @@ class _ProductsEditPage extends State<ProductEditPage> {
   void _setImage(File image){
     _formData['image']= image;
   }
-
+void _showAlertDialog(String message){
+  showDialog(
+      context: context,
+      builder: (context){
+        return AlertDialog(
+          title: Text(message),
+          content: Text('please try again'),
+          actions: <Widget>[
+            FlatButton(
+              onPressed: ()=>Navigator.of(context).pop(),
+              child: Text('Okay'),
+            )
+          ],
+        );
+      });
+}
 //  ======================= Function Edit item =========================
 
   void _submitForm(Function addProduct, Function updateProduct, selectProduct,
@@ -200,37 +216,36 @@ class _ProductsEditPage extends State<ProductEditPage> {
     }
     _formKey.currentState.save();
 
+//    adding a product
+
     if (selectedProductIndex == -1) {
-      addProduct(_titleTextController.text, _formData['image'], _priceTextController.text,
+      addProduct(_titleTextController.text, _formData['image'], _priceTextController.text.replaceFirst(RegExp(r','), '.'),
               _descriptionTextController.text)
-          .then((bool sucess) {
-            if(sucess){
+          .then((bool success) {
+            if(success){
               Navigator
                   .pushReplacementNamed(context, '/')
                   .then((_)=>selectProduct(null));
             }else{
-              showDialog(
-                  context: context,
-                  builder: (context){
-                return AlertDialog(
-                  title: Text('error happened'),
-                  content: Text('please try again'),
-                  actions: <Widget>[
-                    FlatButton(
-                      onPressed: ()=>Navigator.of(context).pop(),
-                      child: Text('Okay'),
-                    )
-                  ],
-                );
-              });
+              _showAlertDialog('error happened');
             }
 
       });
     } else {
-      updateProduct(_titleTextController.text, _formData['image'], _priceTextController.text,
+//      FIXME i have changed some code on update product it might have errors
+      updateProduct(_titleTextController.text, _formData['image'], _priceTextController.text.replaceFirst(RegExp(r','), '.'),
             _descriptionTextController.text)
-          .then((_) => Navigator.pushReplacementNamed(context, '/')
-              .then((_) => selectProduct(null)));
+          .then((bool success){
+
+        if(success){
+          Navigator
+              .pushReplacementNamed(context, '/')
+              .then((_)=>selectProduct(null));
+        }else{
+          _showAlertDialog('error happened');
+        }
+    });
+
     }
 
     showModalBottomSheet(
