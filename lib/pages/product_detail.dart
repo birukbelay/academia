@@ -61,21 +61,27 @@ class ProductDetailPage extends StatelessWidget {
       return Future.value(false);
     },
       child: Scaffold(
-        appBar: _appbar(context, product.title),
-        body: Center(
-          child: Column(
-            children: <Widget>[
+//        appBar: _appbar(context, product.title),
+        body: CustomScrollView(
+         slivers: <Widget>[
+           SliverAppBar(
+             expandedHeight: 256.0,
+             pinned: true,
+             flexibleSpace: FlexibleSpaceBar(
+               title: Text(product.title),
+               background:   Hero(
+                 tag: product.id,
+                 child: FadeInImage(
+                   image: NetworkImage(product.image),
+                   height: 300.0,
+                   fit: BoxFit.cover,
+                   placeholder: AssetImage('assets/images/food/9.jpg'),
+                 ),
+               ),
+             ),
+           ),
 //              @Animation -->hero
-              Hero(
-                tag: product.id,
-                child: FadeInImage(
-                  image: NetworkImage(product.image),
-                  height: 300.0,
-                  fit: BoxFit.cover,
-                  placeholder: AssetImage('assets/images/food/9.jpg'),
-                ),
-              ),
-//
+            SliverList(delegate: SliverChildListDelegate([
               Container(
                   padding: EdgeInsets.all(10.0),
                   child: TitleDefault(product.title)),
@@ -87,8 +93,10 @@ class ProductDetailPage extends StatelessWidget {
                   textAlign: TextAlign.center,
                 ),
               ),
-            ],
-          ),
+            ])),
+//
+
+          ],
         ),
 //        ================ @@../widgets/products/product_fab.dart
         floatingActionButton: ProductFab(product),

@@ -9,6 +9,7 @@ import './pages/products_page.dart';
 import './pages/product_detail.dart';
 import './pages/product_admin.dart';
 import './models/product.dart';
+import './widgets/helpers/custom_route.dart';
 
 import './scoped_models/main_model.dart';
 
@@ -80,7 +81,7 @@ class _MyAppState extends State<MyApp> {
               return product.id == product.id;
             });
 //          model.selectProduct(productId);
-            return MaterialPageRoute<bool>(
+            return CustomRouteFade<bool>(
               builder: (BuildContext context) => ProductDetailPage(product),
             );
           }

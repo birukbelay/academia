@@ -29,17 +29,27 @@ class _ProductsEditPage extends State<ProductEditPage> {
   final _titleFocusNode = FocusNode();
   final _descriptionFocusNode = FocusNode();
   final _priceFocusNode = FocusNode();
+  final _descriptionTextController =TextEditingController();
+  final _titleTextController =TextEditingController();
+  final _priceTextController =TextEditingController();
 
 //  ===============================  Build title  =========================
 
   Widget _buildTitle(Product product) {
+    if(product==null && _titleTextController.text.trim() == ''){
+      _titleTextController.text='';
+    }else if(product !=null && _titleTextController.text.trim()==''){
+      _titleTextController.text=product.title;
+    }
     return EnsureVisibleWhenFocused(
       focusNode: _titleFocusNode,
       child: TextFormField(
+        focusNode: _titleFocusNode,
+        controller: _titleTextController,
         decoration: InputDecoration(
           labelText: 'product name',
         ),
-        initialValue: product == null ? '' : product.title,
+//        initialValue: product == null ? '' : product.title,
         validator: (String value) {
           if (value.isEmpty) {
             return 'title required';
@@ -57,13 +67,20 @@ class _ProductsEditPage extends State<ProductEditPage> {
 //  ========================================  Build Price =================
 
   Widget _buildPrice(Product product) {
+    if(product==null && _priceTextController.text.trim() == ''){
+      _priceTextController.text='';
+    }else if(product !=null && _priceTextController.text.trim()==''){
+      _priceTextController.text=product.price.toString();
+    }
     return EnsureVisibleWhenFocused(
       focusNode: _priceFocusNode,
       child: TextFormField(
+        focusNode: _priceFocusNode,
+        controller: _priceTextController,
         decoration: InputDecoration(labelText: 'price', hintMaxLines: 6),
         keyboardType: TextInputType.number,
         obscureText: false,
-        initialValue: product == null ? '' : product.price.toString(),
+//        initialValue: product == null ? '' : product.price.toString(),
         validator: (String value) {
           if (value.isEmpty ||
               !RegExp(r'^(?:[1-9]\d*|0)?(?:\.\d+)?$').hasMatch(value)) {
@@ -81,12 +98,19 @@ class _ProductsEditPage extends State<ProductEditPage> {
 //  =============================   Build desccription  ====================
 
   Widget _buildDescription(Product product) {
+    if(product==null && _descriptionTextController.text.trim() == ''){
+      _descriptionTextController.text='';
+    }else if(product !=null && _descriptionTextController.text.trim()==''){
+      _descriptionTextController.text=product.description;
+    }
     return EnsureVisibleWhenFocused(
       focusNode: _descriptionFocusNode,
       child: TextFormField(
+        focusNode: _descriptionFocusNode,
+        controller: _descriptionTextController,
         maxLines: 2,
         decoration: InputDecoration(labelText: 'description'),
-        initialValue: product == null ? '' : product.description.toString(),
+//        initialValue: product == null ? '' : product.description.toString(),
         validator: (String value) {
           if (value.isEmpty || value.length < 5) {
             return '* description must be > 5 letters';
@@ -177,8 +201,8 @@ class _ProductsEditPage extends State<ProductEditPage> {
     _formKey.currentState.save();
 
     if (selectedProductIndex == -1) {
-      addProduct(_formData['title'], _formData['image'], _formData['price'],
-              _formData['description'])
+      addProduct(_titleTextController.text, _formData['image'], _priceTextController.text,
+              _descriptionTextController.text)
           .then((bool sucess) {
             if(sucess){
               Navigator
@@ -203,8 +227,8 @@ class _ProductsEditPage extends State<ProductEditPage> {
 
       });
     } else {
-      updateProduct(_formData['title'], _formData['image'], _formData['price'],
-              _formData['description'])
+      updateProduct(_titleTextController.text, _formData['image'], _priceTextController.text,
+            _descriptionTextController.text)
           .then((_) => Navigator.pushReplacementNamed(context, '/')
               .then((_) => selectProduct(null)));
     }

@@ -253,7 +253,7 @@ mixin ProductsModel on ConnectedProducts {
       final Map<String, dynamic> responseData = json.decode(response.body);
 
       final Product newProduct = new Product(
-          id: responseData['name'],
+          id: responseData['id'],
           title: title,
           image: uploadData['imageUrl'],
           imagePath: uploadData['imagePath'],
@@ -309,6 +309,12 @@ mixin ProductsModel on ConnectedProducts {
           _productUrl +
               '/${selectedProduct.id}.json?auth=${_authenticatedUser.token}',
           body: json.encode(updateData));
+
+      if (response.statusCode != 200 || response.statusCode != 201) {
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
 
       _isLoading = false;
       final Product updatedProduct = new Product(
@@ -532,6 +538,7 @@ mixin UserModel on ConnectedProducts {
     _authTimer.cancel();
     //    this emmiting an event
     _userSubject.add(false);
+    _selProductId=null;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.remove('token');
     prefs.remove('email');
