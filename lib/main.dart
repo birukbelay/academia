@@ -10,6 +10,7 @@ import './pages/product_detail.dart';
 import './pages/product_admin.dart';
 import './models/product.dart';
 import './widgets/helpers/custom_route.dart';
+import './shared/adaptive_theme.dart';
 
 import './scoped_models/main_model.dart';
 
@@ -51,13 +52,8 @@ class _MyAppState extends State<MyApp> {
       /*  */
       child: MaterialApp(
         title: 'Flutter Demo',
-
 //      ==================  Theme ---------------------
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-          accentColor: Colors.deepOrange,
-//          brightness: Brightness.dark,
-        ),
+        theme: getAdaptiveTheme(context),
 //        home: AuthPage(),
 
 //    ============================Routes --------------

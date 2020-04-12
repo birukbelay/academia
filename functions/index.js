@@ -23,7 +23,7 @@ const gcs = require('@google-cloud/storage')(gcconfig);
 
 fbAdmin.initializeApp({ credential: fbAdmin.credential.cert(require('./admin.json')) });
 
-exports.storeInage = functions.https.onRequest((req, res) => {
+exports.storeImage = functions.https.onRequest((req, res) => {
     return cors(req, res, () => {
         if (req.method !== 'POST') {
             return res.status(500).json({ message: 'Not allowed' });

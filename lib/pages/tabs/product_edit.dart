@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'dart:io';
 
+
 //my
 import '../../models/product.dart';
 import '../../scoped_models/main_model.dart';
 import '../../widgets/helpers/ensure_visible.dart';
 import '../../widgets/form_inputs/image.dart';
+import '../../widgets/ui_element/adaptive_ui.dart';
 //import '../../widgets/form_inputs/location.dart';
 
 class ProductEditPage extends StatefulWidget {
@@ -136,8 +138,9 @@ class _ProductsEditPage extends State<ProductEditPage> {
   Widget _buildSubmitButton() {
     return ScopedModelDescendant<MainModel>(
       builder: (BuildContext context, Widget widget, MainModel model) {
+//        addaptive progress indicator shows if ios / android
         return model.isLoading
-            ? Center(child: CircularProgressIndicator())
+            ? Center(child: AdaptiveProgressIndicator())
             : RaisedButton(
                 child: Text('Save'),
                 textColor: Colors.white,
@@ -206,6 +209,7 @@ void _showAlertDialog(String message){
         );
       });
 }
+//======================Functions=======================
 //  ======================= Function Edit item =========================
 
   void _submitForm(Function addProduct, Function updateProduct, selectProduct,
